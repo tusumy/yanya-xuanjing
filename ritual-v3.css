@@ -337,3 +337,31 @@ body[data-home-view="island"] .ritual-mode-toggle{color:var(--ink)}
 .ritual-low-motion .ritual-aurora,.ritual-low-motion .ritual-star,.ritual-low-motion .ritual-taiji{
   animation:none!important
 }
+
+
+/* Touch-turning astral compass — the scenery and centered Taiji remain steady. */
+.ritual-stage{
+  --ritual-rotation: -10deg;
+  cursor:grab;
+  touch-action:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.ritual-stage.is-dragging{
+  cursor:grabbing;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.ritual-geometry,
+.ritual-nodes,
+.ritual-compass{
+  transform:rotate(var(--ritual-rotation));
+  transform-origin:50% 50%;
+  transition:none;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+.ritual-stage.is-dragging .ritual-glyph,
+.ritual-stage.is-dragging .ritual-ember{
+  cursor:grabbing;
+}
+.ritual-core{cursor:pointer}
