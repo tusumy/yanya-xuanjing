@@ -218,11 +218,17 @@
     content.append(tags);
   }
   function renderWorkshop() {
-    content.append(lead("术式必须真正可靠，界面才能安静。这里最终会集中 API、模型、MCP 与原生桥接能力。"));
-    content.append(card("星匣 · 模型管理", "规划独立的 Provider 配置、API Key 安全存储与连通性测试。暂未接入，不在原型里收集密钥。"));
-    content.append(card("外部术式 · MCP", "规划收藏、展开、连接状态和危险操作二次确认。"));
-    content.append(card("观星镜 · 多模态", "未来整合生图、视觉模型、语音及附件处理，避免零散入口。"));
-    content.append(element("p", "minor-note", "Android 版本将沿用线上 WebView 前端更新机制；涉及原生权限和功能时单独发布 APK。"));
+    if (window.YanyaBaZi && typeof window.YanyaBaZi.mount === "function") {
+      window.YanyaBaZi.mount(content);
+    } else {
+      content.append(card("四柱命盘", "排盘页面未载入，请刷新网页后重试。"));
+    }
+    const expand = element("details", "tianji-bridge");
+    expand.append(element("summary", "", "其他术式 · 开发中"));
+    expand.append(card("星匣 · 模型管理", "后续增加 Provider 配置、密钥安全存储与连通性测试。"));
+    expand.append(card("外部术式 · MCP", "后续整合已连接工具、状态与危险操作确认。"));
+    expand.append(card("观星镜 · 多模态", "后续整合生图、视觉模型、语音与附件。"));
+    content.append(expand);
   }
   function renderGarden() {
     const count = memories().length;
@@ -280,7 +286,7 @@
     if (!currentLocation) return;
     if (event.key === "Escape") { event.preventDefault(); closePanel(); return; }
     if (event.key !== "Tab") return;
-    const controls = Array.from(panel.querySelectorAll("button:not([disabled]),textarea:not([disabled]),input:not([disabled]),a[href]")).filter(el => el.getClientRects().length > 0);
+    const controls = Array.from(panel.querySelectorAll("button:not([disabled]),textarea:not([disabled]),input:not([disabled]),a[href],select:not([disabled])")).filter(el => el.getClientRects().length > 0);
     if (!controls.length) { event.preventDefault(); panel.focus(); return; }
     if (event.shiftKey && document.activeElement === controls[0]) { event.preventDefault(); controls[controls.length - 1].focus(); }
     else if (!event.shiftKey && document.activeElement === controls[controls.length - 1]) { event.preventDefault(); controls[0].focus(); }
