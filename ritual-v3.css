@@ -365,3 +365,153 @@ body[data-home-view="island"] .ritual-mode-toggle{color:var(--ink)}
   cursor:grabbing;
 }
 .ritual-core{cursor:pointer}
+
+/* Seed 05: a genuine jade-and-apple-green daylight skin for the astral home. */
+body[data-home-view="cosmos"][data-period="day"]{
+  color-scheme:light;
+  --ink:#244d3f;--muted:#537c68;--muted-2:#648b77;
+  --lime:#407e4b;--mint:#348d72;
+  --outline:rgba(56,124,82,.27);--line:rgba(56,124,82,.17);
+  background:
+    radial-gradient(ellipse 72% 42% at 50% 35%,rgba(194,240,166,.58),transparent 82%),
+    radial-gradient(ellipse 85% 50% at 74% 73%,rgba(137,213,170,.36),transparent 79%),
+    linear-gradient(175deg,#f8fff1 0%,#e5f5d9 42%,#d5ebd7 100%);
+}
+body[data-home-view="cosmos"][data-period="day"]::before{opacity:.10}
+body[data-home-view="cosmos"][data-period="day"] .topbar{
+  border-bottom-color:rgba(67,132,82,.20);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+}
+body[data-home-view="cosmos"][data-period="day"] .brand-emblem{
+  color:#2e7253;background:linear-gradient(155deg,#e8ffd5,#b6e3b9);
+  border-color:rgba(53,131,75,.25);
+}
+body[data-home-view="cosmos"][data-period="day"] .brand-copy strong{color:#24513d}
+body[data-home-view="cosmos"][data-period="day"] .brand-copy small,
+body[data-home-view="cosmos"][data-period="day"] .edition{color:#698976}
+body[data-home-view="cosmos"][data-period="day"] .icon-button{
+  color:#386d52;background:rgba(255,255,255,.56);
+  border-color:rgba(51,116,73,.22);
+}
+body[data-home-view="cosmos"][data-period="day"] .dock{
+  background:rgba(244,255,239,.93);color:#24523b;
+  border-color:rgba(65,134,81,.29);
+  box-shadow:0 10px 35px rgba(77,128,78,.14);
+}
+body[data-home-view="cosmos"][data-period="day"] .dock button{color:#447660}
+body[data-home-view="cosmos"][data-period="day"] .dock button:hover{
+  color:#24513d;background:rgba(129,210,132,.18);
+}
+body[data-home-view="cosmos"][data-period="day"] .panel{
+  background:linear-gradient(145deg,#f7fff2,#dcefdc 90%);color:#264c3a;
+}
+body[data-home-view="cosmos"][data-period="day"] .panel .module-card{
+  background:rgba(255,255,255,.65);
+}
+body[data-home-view="cosmos"][data-period="day"] .panel .field{
+  background:rgba(255,255,255,.86);color:#254e3d;
+}
+body[data-home-view="cosmos"][data-period="day"] .panel .section-lead,
+body[data-home-view="cosmos"][data-period="day"] .panel .module-card p{color:#527b64}
+body[data-home-view="cosmos"][data-period="day"] .ritual{color:#27523e}
+body[data-home-view="cosmos"][data-period="day"] .ritual::before{
+  background:radial-gradient(ellipse 55% 53% at 50% 42%,rgba(107,187,112,.25),transparent 77%);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-top,
+body[data-home-view="cosmos"][data-period="day"] .ritual-subtitle{color:#57856d}
+body[data-home-view="cosmos"][data-period="day"] .ritual-top-mark{color:rgba(54,135,72,.55)}
+body[data-home-view="cosmos"][data-period="day"] .ritual-title{
+  color:#285c41;text-shadow:0 2px 27px rgba(95,171,99,.16);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-mode-toggle{
+  background:rgba(255,255,255,.65);color:#326c50;
+  border-color:rgba(62,132,84,.3);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-stage::before{
+  background:
+    repeating-radial-gradient(circle at center,transparent 0,transparent 44px,rgba(56,142,91,.045) 45px,transparent 46px),
+    radial-gradient(circle,rgba(201,242,188,.84),rgba(195,237,205,.48) 42%,rgba(231,250,219,.1) 72%,transparent 78%);
+  box-shadow:0 0 90px rgba(96,180,99,.13),inset 0 0 55px rgba(102,183,127,.2);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-stage::after{
+  border-color:rgba(53,126,85,.13);
+  box-shadow:0 0 57px rgba(103,186,112,.13),inset 0 0 65px rgba(113,196,113,.09);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-aurora{
+  background:
+    radial-gradient(circle,rgba(134,214,101,.21),transparent 49%),
+    conic-gradient(from 50deg,transparent,rgba(77,174,91,.16),transparent 26%,rgba(134,223,119,.2),transparent 75%);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-ring,
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-octave,
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-arch{
+  stroke:rgba(51,125,80,.47);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-ring-outer,
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-mark-strong{
+  stroke:#3b9362;filter:drop-shadow(0 0 3px rgba(99,174,96,.19));
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-mark,
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-ring-fine{
+  stroke:rgba(54,128,88,.39);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-geometry .ritual-lodestar{fill:#3d9766}
+body[data-home-view="cosmos"][data-period="day"] .ritual-compass{color:#4c9369}
+body[data-home-view="cosmos"][data-period="day"] .ritual-compass span{text-shadow:none;opacity:.8}
+body[data-home-view="cosmos"][data-period="day"] .ritual-star{
+  background:#388a59;box-shadow:0 0 6px rgba(56,145,79,.28);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-star-bright{background:#78b65c}
+body[data-home-view="cosmos"][data-period="day"] .ritual-heart-halo{
+  background:radial-gradient(circle,rgba(125,209,137,.22),transparent 68%);
+  border-color:rgba(60,130,85,.13);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-core{
+  background:radial-gradient(circle at 24% 14%,#f1ffe2,#c0e8c4 48%,#80bca3);
+  border-color:rgba(58,124,73,.5);color:#245f43;
+  box-shadow:0 0 50px rgba(86,164,87,.27),inset 0 0 35px rgba(255,255,255,.5);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-core-invite{color:#346f53}
+body[data-home-view="cosmos"][data-period="day"] .ritual-glyph{
+  color:#326b50;border-color:rgba(51,126,76,.38);
+  background:radial-gradient(circle at 31% 20%,#f4ffe8,#c8eac9 80%);
+  box-shadow:0 5px 18px rgba(64,121,69,.16),inset 0 0 15px rgba(255,255,255,.6);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-glyph.is-active{
+  color:#194f39;background:radial-gradient(circle at 45% 13%,#deffac,#9ed4a1 78%);
+  border-color:#4f9f69;
+  box-shadow:0 0 21px rgba(73,155,77,.24);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-ember{
+  border-color:#5e9d6c;background:radial-gradient(circle,#e3ffb0,#65b183 60%,#3f8865);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-ember.is-active{background:#5d9d63}
+body[data-home-view="cosmos"][data-period="day"] .ritual-north,
+body[data-home-view="cosmos"][data-period="day"] .ritual-south,
+body[data-home-view="cosmos"][data-period="day"] .ritual-stage-caption{color:#55876d}
+body[data-home-view="cosmos"][data-period="day"] .ritual-nav-arrow{
+  color:#347652;border-color:rgba(63,132,80,.3);background:rgba(250,255,242,.72);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-dot{background:rgba(71,136,76,.35)}
+body[data-home-view="cosmos"][data-period="day"] .ritual-dot.is-active{background:#4b9956}
+body[data-home-view="cosmos"][data-period="day"] .ritual-detail{
+  background:linear-gradient(145deg,rgba(255,255,248,.88),rgba(216,242,215,.91));
+  border-color:rgba(74,143,90,.33);box-shadow:0 16px 50px rgba(76,130,76,.12);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-detail-title,
+body[data-home-view="cosmos"][data-period="day"] .ritual-hex-unicode{color:#275c43}
+body[data-home-view="cosmos"][data-period="day"] .ritual-detail-kicker,
+body[data-home-view="cosmos"][data-period="day"] .ritual-description p,
+body[data-home-view="cosmos"][data-period="day"] .ritual-select-label,
+body[data-home-view="cosmos"][data-period="day"] .ritual-pattern-label{color:#567e66}
+body[data-home-view="cosmos"][data-period="day"] .ritual-entry{
+  color:#28583f;background:linear-gradient(125deg,#e6f8d5,#c3e9c4);
+  border-color:rgba(65,142,83,.38);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-select{
+  color:#28533c;background:#f8fff0;border-color:rgba(74,141,85,.33);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-yao-line i{background:#438d57}
+body[data-home-view="cosmos"][data-period="day"] .ritual-bottom{
+  color:#69947b;border-top-color:rgba(74,137,86,.2);
+}
