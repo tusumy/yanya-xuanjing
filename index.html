@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081c18">
+  <meta name="description" content="砚芽 · 玄境，一座随着陪伴和记忆生长的浮岛。">
+  <title>砚芽 · 玄境</title>
+  <link rel="stylesheet" href="styles.css?v=seed-1">
+</head>
+<body data-period="night">
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="砚芽玄境首页">
+        <span class="brand-emblem" aria-hidden="true">芽</span>
+        <span class="brand-copy"><strong>砚芽<span class="brand-dot">·</span>玄境</strong><small>YANYA / XUANJING</small></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="edition">SEED EDITION <b>01</b></span>
+        <button class="icon-button period-button" id="periodToggle" type="button" aria-label="切换昼夜" title="切换昼夜">☾</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="mainTitle">
+        <span class="eyebrow"><span class="eyebrow-spark">✧</span> A PLACE TO RETURN TO <span class="eyebrow-spark">✧</span></span>
+        <h1 id="mainTitle">万物，从一颗<span>芽</span>开始。</h1>
+        <p>山海有灵，星辰有迹。我们的故事，会在这里慢慢生长。</p>
+        <div class="intro-meta" aria-live="polite">
+          <span id="periodLabel">今夜 · 星海微明</span><span class="tiny-diamond">◇</span><span id="localDate">—</span>
+        </div>
+      </section>
+
+      <section class="world" aria-label="可以探索的玄境浮岛">
+        <div class="world-halo halo-one" aria-hidden="true"></div>
+        <div class="world-halo halo-two" aria-hidden="true"></div>
+        <div class="world-stars" aria-hidden="true"></div>
+        <div class="moon" aria-hidden="true"><span></span></div>
+        <span class="ambient-glyph glyph-a" aria-hidden="true">✦</span>
+        <span class="ambient-glyph glyph-b" aria-hidden="true">✧</span>
+        <span class="ambient-glyph glyph-c" aria-hidden="true">✷</span>
+        <div class="orbit orbit-one" aria-hidden="true"></div>
+        <div class="orbit orbit-two" aria-hidden="true"></div>
+
+        <svg class="island-art" viewBox="0 0 900 620" role="img" aria-label="云海上悬浮的青绿色岛屿，中央有一座楼阁，周围有竹林、星象台、小桥和花园">
+          <defs>
+            <linearGradient id="landtop" x1="0" y1="0" x2="0.88" y2="1">
+              <stop offset="0" stop-color="#8fc78f"/><stop offset=".5" stop-color="#4f8b70"/><stop offset="1" stop-color="#244d4a"/>
+            </linearGradient>
+            <linearGradient id="landside" x1="0" y1="0" x2=".65" y2="1">
+              <stop stop-color="#2b5653"/><stop offset=".53" stop-color="#193c40"/><stop offset="1" stop-color="#091c2c"/>
+            </linearGradient>
+            <linearGradient id="roof" x1="0" x2=".2" y1="0" y2="1">
+              <stop stop-color="#aecfc3"/><stop offset=".48" stop-color="#5e9485"/><stop offset="1" stop-color="#2c5a57"/>
+            </linearGradient>
+            <linearGradient id="tower" x1="0" x2="1" y1="0" y2=".6">
+              <stop stop-color="#d6e0cb"/><stop offset="1" stop-color="#6d9a89"/>
+            </linearGradient>
+            <radialGradient id="islandGlow">
+              <stop stop-color="#9ee7a9" stop-opacity=".48"/><stop offset="1" stop-color="#8ae8d2" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="softglow" x="-50%" y="-60%" width="200%" height="220%">
+              <feGaussianBlur stdDeviation="10"/>
+            </filter>
+            <filter id="smallglow" x="-70%" y="-70%" width="240%" height="240%">
+              <feGaussianBlur stdDeviation="3"/>
+            </filter>
+          </defs>
+
+          <ellipse cx="449" cy="392" rx="340" ry="175" fill="url(#islandGlow)" opacity=".9"/>
+          <ellipse cx="455" cy="481" rx="315" ry="33" fill="#74d6bd" opacity=".18" filter="url(#softglow)"/>
+          <path d="M135 361 Q265 298 461 322 Q645 307 769 363 L715 427 Q573 473 441 474 Q247 474 175 412 Z" fill="url(#landtop)" stroke="#aac8af" stroke-opacity=".28" stroke-width="2"/>
+          <path d="M175 410 Q300 462 449 470 Q616 466 715 426 Q672 498 584 533 L474 595 L368 553 Q267 519 219 457 Z" fill="url(#landside)" stroke="#73ad9d" stroke-opacity=".25" stroke-width="2"/>
+          <path d="M338 479 L400 560 L426 571 L404 502 Z M486 477 L470 555 L487 585 L518 479 Z M587 469 L550 531 L582 516 L626 458 Z" fill="#356d66" opacity=".4"/>
+          <path d="M237 397 Q350 335 462 362 Q601 342 683 388" fill="none" stroke="#ddf4cf" opacity=".23" stroke-width="2"/>
+          <path d="M218 415 Q282 422 337 405" fill="none" stroke="#c2eec0" opacity=".38" stroke-width="3"/>
+
+          <!-- Distant trees -->
+          <g fill="#204b43" opacity=".85">
+            <path d="M203 360 l17 -92 16 92z"/><path d="M232 369 l21 -111 24 112z"/>
+            <path d="M641 360 l21 -103 23 104z"/><path d="M677 372 l19 -89 17 93z"/>
+          </g>
+          <g fill="#5a9476">
+            <circle cx="240" cy="321" r="41"/><circle cx="209" cy="333" r="30"/>
+            <circle cx="665" cy="317" r="41"/><circle cx="699" cy="338" r="29"/>
+          </g>
+          <g fill="#83b293" opacity=".78"><circle cx="226" cy="308" r="23"/><circle cx="681" cy="308" r="24"/></g>
+
+          <!-- Pavilion, deliberately handcrafted shapes -->
+          <g class="pavilion">
+            <path d="M382 343 L382 280 L520 280 L520 343" fill="#6b9c88" stroke="#bfd6b7" stroke-width="3"/>
+            <rect x="393" y="282" width="116" height="62" rx="3" fill="url(#tower)"/>
+            <rect x="409" y="294" width="27" height="47" fill="#163e3e"/>
+            <rect x="466" y="294" width="27" height="47" fill="#163e3e"/>
+            <rect x="442" y="298" width="20" height="45" fill="#2a5550"/>
+            <path d="M354 283 Q407 254 451 246 Q496 254 548 283 L536 288 Q494 273 451 266 Q408 273 368 288 Z" fill="url(#roof)" stroke="#bad7c7" stroke-width="3"/>
+            <path d="M372 276 Q397 274 413 256 L489 256 Q512 276 529 276 L510 232 L394 232 Z" fill="#244e4e" stroke="#9ac5ad" stroke-width="3"/>
+            <path d="M370 236 Q407 221 450 194 Q491 223 532 236 Q507 234 491 229 L410 229 Q396 235 370 236 Z" fill="url(#roof)" stroke="#d0e4c9" stroke-width="3"/>
+            <rect x="443" y="184" width="15" height="12" rx="2" fill="#d5dec9"/>
+            <rect x="407" y="240" width="12" height="26" fill="#a2bba5"/>
+            <rect x="482" y="240" width="12" height="26" fill="#a2bba5"/>
+            <path d="M385 344 H519 L533 353 H372 Z" fill="#b4d3b3"/>
+            <path d="M382 350 H523 L534 360 H374 Z" fill="#3c7066"/>
+            <rect x="445" y="310" width="13" height="27" rx="2" fill="#ebdea0" opacity=".9"/>
+            <path d="M449 180 L449 156" stroke="#b4dfb8" stroke-width="3"/>
+            <circle cx="449" cy="151" r="5" fill="#d7f8ae" filter="url(#smallglow)"/>
+          </g>
+
+          <!-- Astral observatory -->
+          <g transform="translate(596 343)">
+            <ellipse cx="0" cy="20" rx="62" ry="17" fill="#365f59"/>
+            <path d="M-30 13 L-23 -32 L23 -32 L30 13" fill="#8db9a5" stroke="#cfe5c6" stroke-width="2"/>
+            <ellipse cx="0" cy="-31" rx="41" ry="12" fill="#264c4a" stroke="#bed7ad" stroke-width="4"/>
+            <circle cx="0" cy="-60" r="43" fill="none" stroke="#bfeab6" stroke-opacity=".85" stroke-width="3"/>
+            <ellipse cx="0" cy="-60" rx="17" ry="44" fill="none" stroke="#cde0ca" stroke-width="2" transform="rotate(30 0 -60)"/>
+            <circle cx="0" cy="-60" r="11" fill="#cce9c1" opacity=".8"/><circle cx="0" cy="-60" r="4" fill="#f5ffd8"/>
+          </g>
+
+          <!-- Small bridge and water channel -->
+          <path d="M308 380 Q354 357 393 380" fill="none" stroke="#e5dab1" stroke-width="10" stroke-linecap="round"/>
+          <path d="M306 383 Q356 361 396 383" fill="none" stroke="#406a63" stroke-width="3"/>
+          <path d="M282 399 Q332 383 359 402" fill="none" stroke="#aae1cd" opacity=".5" stroke-width="5"/>
+
+          <!-- Mystical garden flowers and lanterns -->
+          <g transform="translate(317 367)">
+            <path d="M0 18 L0 -19 M-13 8 L-20 -7 M13 8 L22 -7" fill="none" stroke="#a6d4a4" stroke-width="3"/>
+            <circle cx="0" cy="-23" r="9" fill="#edbac7"/><circle cx="-21" cy="-9" r="6" fill="#d9a3bb"/><circle cx="23" cy="-8" r="7" fill="#f3d2cb"/>
+            <circle cx="1" cy="-23" r="3" fill="#f3edc9"/>
+          </g>
+          <g transform="translate(562 374)">
+            <path d="M0 9 L0 -22 M-13 7 L-18 -11" stroke="#99cd95" stroke-width="3" fill="none"/>
+            <circle cx="0" cy="-25" r="9" fill="#efadc8"/><circle cx="-18" cy="-13" r="6" fill="#f2cfdf"/>
+          </g>
+          <g fill="#f1e6b2">
+            <circle cx="345" cy="345" r="3"/><circle cx="553" cy="333" r="3"/><circle cx="713" cy="358" r="3"/>
+          </g>
+          <g fill="#b6faac" opacity=".78" filter="url(#smallglow)">
+            <circle cx="308" cy="337" r="6"/><circle cx="539" cy="337" r="5"/><circle cx="687" cy="381" r="7"/><circle cx="215" cy="382" r="4"/>
+          </g>
+          <path d="M290 427 Q412 447 571 437" stroke="#bae3b9" opacity=".12" stroke-width="2" fill="none"/>
+        </svg>
+
+        <button class="location center-location" data-location="heart" type="button" style="--x:50%;--y:31%">
+          <span class="location-mark">✦</span><span class="location-name">岛心</span><small>对话主殿</small>
+        </button>
+        <button class="location" data-location="stars" type="button" style="--x:19%;--y:44%">
+          <span class="location-mark">✧</span><span class="location-name">星阁</span><small>记忆与珍藏</small>
+        </button>
+        <button class="location" data-location="oracle" type="button" style="--x:80%;--y:38%">
+          <span class="location-mark">☽</span><span class="location-name">签庭</span><small>灵签与星象</small>
+        </button>
+        <button class="location" data-location="library" type="button" style="--x:23%;--y:72%">
+          <span class="location-mark">❖</span><span class="location-name">藏书楼</span><small>书房与角色</small>
+        </button>
+        <button class="location" data-location="workshop" type="button" style="--x:80%;--y:72%">
+          <span class="location-mark">✳</span><span class="location-name">天机台</span><small>术式与工具</small>
+        </button>
+        <button class="location" data-location="garden" type="button" style="--x:51%;--y:84%">
+          <span class="location-mark">❀</span><span class="location-name">灵圃</span><small>一同生长</small>
+        </button>
+      </section>
+
+      <section class="below-scene" aria-label="岛屿状态">
+        <div class="scene-status">
+          <span class="status-symbol">❋</span>
+          <div><strong>砚芽初生</strong><small>岛上的第一盏灯，已经亮了。</small></div>
+        </div>
+        <div class="scene-prompt">触碰岛上的星标，开启一处秘境 <span aria-hidden="true">↗</span></div>
+      </section>
+    </main>
+
+    <nav class="dock" aria-label="快捷导航">
+      <button data-location="heart" type="button"><span>⌂</span><small>岛心</small></button>
+      <button data-location="stars" type="button"><span>✧</span><small>星阁</small></button>
+      <button data-location="oracle" type="button"><span>☽</span><small>签庭</small></button>
+      <button data-location="library" type="button"><span>▤</span><small>书房</small></button>
+      <button data-location="workshop" type="button"><span>✳</span><small>机关</small></button>
+    </nav>
+  </div>
+
+  <div id="panelScrim" class="panel-scrim" hidden></div>
+  <aside id="panel" class="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" aria-hidden="true" tabindex="-1">
+    <div class="panel-head">
+      <div><span class="panel-kicker" id="panelKicker"></span><h2 id="panelTitle"></h2></div>
+      <button type="button" id="panelClose" class="icon-button" aria-label="关闭">×</button>
+    </div>
+    <div id="panelContent" class="panel-content"></div>
+    <footer class="panel-foot">YANYA XUANJING <span>✧</span> SEED 01</footer>
+  </aside>
+  <script src="app.js?v=seed-1" defer></script>
+</body>
+</html>
