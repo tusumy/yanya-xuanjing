@@ -91,6 +91,109 @@
   const caption=document.getElementById("ritualStageCaption");
   const core=document.getElementById("ritualCore");
 
+  // Independent mechanical ring. Rune taps still select; dragging them rotates instead.
+  const motionPref = typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  const initialRotation = Number(read("ritual.rotation", -10));
+  const dial = {
+    angle: Number.isFinite(initialRotation) ? initialRotation : -10,
+    pointerId: null, startX: 0, startY: 0,
+    lastAngle: 0, lastTime: 0, lastFrame: 0,
+    dragging: false, suppressClick: false,
+    velocity: 0, inertia: 0
+  };
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const angleDifference=(a,b)=>((a-b+540)%360)-180;
+  const centerAngle=(event)=>{
+    const r=stage.getBoundingClientRect();
+    return Math.atan2(event.clientY-(r.top+r.height/2),
+      event.clientX-(r.left+r.width/2))*180/Math.PI;
+  };
+  const paintDial=()=>stage.style.setProperty("--ritual-rotation",dial.angle+"deg");
+  const persistDial=()=>save("ritual.rotation",Math.round(dial.angle*100)/100);
+  const noAutoMotion=()=>root.classList.contains("ritual-low-motion") ||
+    Boolean(motionPref && motionPref.matches);
+  paintDial();
+
+  stage.addEventListener("pointerdown",event=>{
+    if(event.isPrimary===false)return;
+    if(event.pointerType==="mouse"&&event.button!==0)return;
+    if(event.target.closest && event.target.closest("#ritualCore"))return;
+    dial.pointerId=event.pointerId;
+    dial.startX=event.clientX;dial.startY=event.clientY;
+    dial.lastAngle=centerAngle(event);dial.lastTime=performance.now();
+    dial.velocity=0;dial.inertia=0;
+    dial.dragging=false;dial.suppressClick=false;
+  });
+
+  stage.addEventListener("pointermove",event=>{
+    if(dial.pointerId!==event.pointerId)return;
+    if(!dial.dragging){
+      if(Math.hypot(event.clientX-dial.startX,event.clientY-dial.startY)<7)return;
+      dial.dragging=true;
+      stage.classList.add("is-dragging");
+      if(stage.setPointerCapture){
+        try{stage.setPointerCapture(event.pointerId);}catch(_){}
+      }
+    }
+    const now=performance.now();
+    const angle=centerAngle(event);
+    const delta=angleDifference(angle,dial.lastAngle);
+    const elapsed=clamp(now-dial.lastTime,8,100);
+    dial.angle=(dial.angle+delta+360)%360;
+    dial.velocity=clamp(dial.velocity*.65+(delta/elapsed*1000)*.35,-240,240);
+    dial.lastAngle=angle;dial.lastTime=now;
+    paintDial();
+    if(event.cancelable)event.preventDefault();
+  },{passive:false});
+
+  const finishDial=(event,cancelled=false)=>{
+    if(event.pointerId!==dial.pointerId)return;
+    const rotated=dial.dragging;
+    dial.pointerId=null;
+    dial.dragging=false;
+    stage.classList.remove("is-dragging");
+    if(rotated){
+      dial.suppressClick=true;
+      dial.inertia=cancelled||noAutoMotion()?0:clamp(dial.velocity,-180,180);
+      persistDial();
+    }
+    if(stage.hasPointerCapture&&stage.hasPointerCapture(event.pointerId)){
+      try{stage.releasePointerCapture(event.pointerId);}catch(_){}
+    }
+  };
+  stage.addEventListener("pointerup",event=>finishDial(event));
+  stage.addEventListener("pointercancel",event=>finishDial(event,true));
+  stage.addEventListener("lostpointercapture",event=>finishDial(event,true));
+  stage.addEventListener("click",event=>{
+    if(!dial.suppressClick)return;
+    dial.suppressClick=false;
+    event.preventDefault();event.stopImmediatePropagation();
+  },true);
+
+  // Momentum slows into a calm self-turning orbit; no full-scene rotation.
+  const animateDial=(timestamp)=>{
+    const elapsed=dial.lastFrame?clamp(timestamp-dial.lastFrame,0,55):0;
+    dial.lastFrame=timestamp;
+    if(dial.pointerId===null && state.view==="cosmos" && !document.hidden && !noAutoMotion()){
+      if(Math.abs(dial.inertia)>.3){
+        dial.angle=(dial.angle+dial.inertia*elapsed/1000+360)%360;
+        dial.inertia*=Math.exp(-elapsed/680);
+      }else{
+        dial.inertia=0;
+        dial.angle=(dial.angle+1.2*elapsed/1000+360)%360;
+      }
+      paintDial();
+    }
+    requestAnimationFrame(animateDial);
+  };
+  document.addEventListener("visibilitychange",()=>{
+    dial.lastFrame=0;
+    if(document.hidden)persistDial();
+  });
+  window.addEventListener("pagehide",persistDial);
+
+
   // Scene switch is a corner control, not a row of instructional tabs.
   const topbar=document.querySelector(".topbar-actions");
   const modeButton=button("◈ 浮岛","ritual-mode-toggle",()=>switchView(state.view==="cosmos"?"island":"cosmos"));
@@ -306,18 +409,8 @@
   document.getElementById("ritualPrev").addEventListener("click",()=>shift(-1));
   document.getElementById("ritualNext").addEventListener("click",()=>shift(1));
   core.addEventListener("click",()=>shift(1));
-  // Swiping the empty orbital background switches stages; on top of a rune it won't.
-  let startX=null;
-  stage.addEventListener("pointerdown",e=>{
-    if(e.target.closest && e.target.closest("button"))return;
-    startX=e.clientX;
-  });
-  stage.addEventListener("pointerup",e=>{
-    if(startX===null)return;
-    const delta=e.clientX-startX;startX=null;
-    if(Math.abs(delta)>85)shift(delta<0?1:-1);
-  });
-  stage.addEventListener("pointercancel",()=>{startX=null;});
+  // The ring now rotates by drag. Stage progression stays on the central Taiji and arrows.
   if(navigator.connection && navigator.connection.saveData)root.classList.add("ritual-low-motion");
   draw();
+  requestAnimationFrame(animateDial);
 })();
