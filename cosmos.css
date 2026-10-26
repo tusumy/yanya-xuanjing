@@ -1,0 +1,230 @@
+/* 砚芽 · 玄境 / 太极衍化阵 Seed 02 */
+.home-switch {
+  display: inline-flex; gap: 4px; align-items: center; padding: 5px;
+  margin: 23px auto 0; border-radius: 999px;
+  background: rgba(83, 147, 113, .105); border: 1px solid var(--outline);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.home-switch-button {
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  padding: 7px 17px; border-radius: 999px; cursor: pointer;
+  letter-spacing: .8px; font-size: 11px; transition: .25s;
+}
+.home-switch-button[aria-pressed="true"] {
+  color: var(--ink); border-color: rgba(173, 237, 171, .27);
+  background: rgba(132, 201, 146, .2); box-shadow: inset 0 1px rgba(255,255,255,.09);
+}
+body[data-home-view="cosmos"] .world { display: none; }
+body[data-home-view="island"] .cosmos { display: none; }
+body[data-home-view="cosmos"] .below-scene { margin-top: 23px; max-width: 730px; margin-inline: auto; }
+
+.cosmos {
+  width: 100%; margin: 44px auto 0; position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  isolation: isolate;
+}
+.cosmos::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  width: min(880px, 125%); height: 590px; top: 47px; left: 50%; transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 51%, rgba(68, 159, 123, .14), transparent 64%);
+}
+.cosmos-heading { text-align: center; }
+.cosmos-small-caps { color: var(--mint); opacity: .8; letter-spacing: 3px; font-size: 9px; }
+.cosmos-heading-title {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-weight: 500; display: block; font-size: clamp(20px, 2.5vw, 31px);
+  letter-spacing: 3.5px; margin: 12px 0 6px; color: var(--ink);
+}
+.cosmos-heading-subtitle { margin: 0; color: var(--muted); font-size: 11px; letter-spacing: 1px; line-height: 1.8; }
+.cosmos-levels {
+  display: flex; justify-content: center; gap: 7px;
+  width: 100%; overflow-x: auto; scrollbar-width: none;
+  margin-top: 24px; padding: 4px 1px 8px;
+}
+.cosmos-levels::-webkit-scrollbar { display: none; }
+.cosmos-level-button {
+  flex: 0 0 auto; min-width: 71px; padding: 8px 13px 9px;
+  display: flex; align-items: center; flex-direction: column; gap: 3px;
+  border-radius: 12px; color: var(--muted);
+  border: 1px solid var(--outline); background: rgba(46, 101, 76, .06);
+  cursor: pointer; transition: color .22s, background .22s, border-color .22s, transform .22s;
+}
+.cosmos-level-button:hover { color: var(--ink); transform: translateY(-2px); }
+.cosmos-level-button[aria-pressed="true"] {
+  color: var(--ink); border-color: rgba(187, 245, 154, .55);
+  background: linear-gradient(130deg, rgba(95, 172, 115, .26), rgba(44, 104, 88, .16));
+  box-shadow: 0 0 24px rgba(155, 233, 155, .07), inset 0 1px rgba(245,255,233,.13);
+}
+.cosmos-level-button small { font-size: 10px; font-family: ui-monospace, monospace; letter-spacing: 1px; opacity: .7; }
+.cosmos-level-button span { font-family: "Noto Serif SC","Songti SC",serif; font-size: 13px; letter-spacing: 1px; }
+
+.cosmos-orbit {
+  position: relative; width: min(605px, 100%); aspect-ratio: 1 / 1;
+  margin: 13px auto 4px; overflow: visible;
+}
+.cosmos-orbit-glow {
+  pointer-events: none; position: absolute; inset: 3%; border-radius: 50%; z-index: -2;
+  background: radial-gradient(circle at 50% 50%, rgba(109, 205, 151, .12) 0%, rgba(36, 85, 76, .18) 18%, rgba(35, 97, 85, .07) 38%, transparent 67%);
+  box-shadow: inset 0 0 85px rgba(128, 243, 193, .025);
+}
+.cosmos-orbit-glow::before, .cosmos-orbit-glow::after {
+  content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+}
+.cosmos-orbit-glow::before { inset: 20%; border: 1px solid rgba(154, 231, 184, .09); box-shadow: 0 0 80px rgba(153, 249, 155, .04); }
+.cosmos-orbit-glow::after { inset: -4%; background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(94, 179, 130, .045) 60%, transparent 74%); }
+.cosmos-geometry { display: block; width: 100%; height: 100%; position: relative; pointer-events: none; }
+.cosmos-ring {
+  fill: none; stroke: rgba(142, 225, 187, .19); stroke-width: .9;
+  stroke-dasharray: 2 4;
+}
+.cosmos-ring-main { stroke: rgba(186, 244, 187, .48); stroke-width: 1.4; stroke-dasharray: none; }
+.cosmos-ring-faint { fill:none; stroke: rgba(171, 232, 177, .095); stroke-width:1; }
+.cosmos-ray { stroke: rgba(144, 235, 177, .17); stroke-width: 1; stroke-dasharray: 3 5; }
+.cosmos-tick { stroke: rgba(159, 222, 190, .45); stroke-width: 1.2; stroke-linecap: round; transition: stroke .3s; }
+.cosmos-tick-strong { stroke: rgba(196, 249, 171, .9); stroke-width: 2; }
+.cosmos-starpoint { fill: #d5f5a5; filter: drop-shadow(0 0 5px rgba(193, 242, 139, .8)); }
+.cosmos-orbit[data-level="1"] .cosmos-ring, .cosmos-orbit[data-level="2"] .cosmos-ring { opacity: .52; }
+
+.cosmos-center {
+  position: absolute; z-index: 1; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 31%; height: 31%; display: grid; place-items: center;
+}
+.cosmos-center::before {
+  content: ""; position: absolute; inset: -22%; border-radius: 50%; pointer-events: none;
+  border: 1px solid rgba(173, 247, 177, .13);
+  box-shadow: 0 0 24px rgba(159, 230, 162, .045), inset 0 0 22px rgba(174, 255, 164, .06);
+}
+.cosmos-core {
+  border: 0; border-radius: 50%; width: 100%; height: 100%;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; color: var(--ink);
+  background: radial-gradient(circle at 45% 25%, rgba(55, 119, 90, .25),rgba(10, 49, 40, .86) 80%);
+  box-shadow: 0 0 55px rgba(151, 234, 159, .14), inset 0 0 45px rgba(181, 245, 176, .065);
+  border: 1px solid rgba(179, 237, 165, .39);
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+}
+.cosmos-core:hover { transform: scale(1.055); box-shadow: 0 0 65px rgba(151,234,159,.25); border-color: var(--lime); }
+.cosmos-taiji { width: 53%; height: 53%; overflow: visible; filter: drop-shadow(0 0 12px rgba(203, 255, 184, .18)); animation: cosmos-drift 20s linear infinite; }
+.cosmos-center-title { display: block; font-family: "Noto Serif SC","Songti SC",serif; color: #d6efcf; font-size: clamp(13px, 2.1vw, 19px); letter-spacing: 2px; margin-top: 1px; }
+.cosmos-center-hint { display: block; color: #96cbb1; font-size: 9px; letter-spacing: 2px; padding-top: 2px; }
+
+.cosmos-nodes { position: absolute; inset: 0; pointer-events: none; }
+.cosmos-node {
+  position: absolute; transform: translate(-50%,-50%); z-index: 2;
+  width: 73px; height: 69px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; border: 1px solid rgba(171, 231, 182, .23);
+  background: radial-gradient(circle at 50% 10%, rgba(30, 82, 66, .94), rgba(8, 34, 33, .9));
+  border-radius: 16px; pointer-events: auto; cursor: pointer; color: #c4e6ce;
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  box-shadow: inset 0 1px 0 rgba(249,255,228,.055), 0 8px 20px rgba(3,20,19,.12);
+  transition: background .2s, scale .2s, color .2s, border-color .2s, box-shadow .2s;
+}
+.cosmos-node:hover { scale: 1.06; }
+.cosmos-node.is-active {
+  border-color: rgba(205, 252, 173, .74); color: #eeffdb;
+  box-shadow: 0 0 23px rgba(157, 232, 158, .2), inset 0 0 17px rgba(140, 210, 139, .085);
+}
+.cosmos-node-symbol { line-height: 1; font-size: 27px; font-family: "Segoe UI Symbol","Noto Sans Symbols 2",sans-serif; }
+.cosmos-node-label { font-size: 10px; white-space: nowrap; letter-spacing: .7px; }
+.cosmos-node-minimal { width: 86px; height: 77px; }
+.cosmos-node-minimal .cosmos-node-symbol { font-size: 23px; }
+
+.cosmos-detail {
+  width: min(730px, 100%); margin: 4px auto 0;
+  padding: 20px 26px 21px;
+  border: 1px solid var(--outline); border-radius: 21px;
+  background: linear-gradient(115deg, rgba(50, 104, 82, .16), rgba(40, 78, 81, .085));
+  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  box-shadow: inset 0 1px rgba(220, 250, 206, .06);
+}
+.cosmos-detail-title { display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.cosmos-stage-index { color: var(--lime); font-family: ui-monospace,monospace; font-size: 11px; opacity: .75; letter-spacing: 1px; }
+.cosmos-detail-title h2 { font-family: "Songti SC","Noto Serif SC",serif; font-weight: 500; font-size: 20px; letter-spacing: 2px; margin: 0; }
+.cosmos-stage-desc { font-size: 10px; color: var(--muted); letter-spacing: .5px; }
+.cosmos-detail-content { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-top: 17px; }
+.cosmos-detail-content p { font-size: 12px; line-height: 1.75; color: var(--muted); margin: 0; flex: 1; }
+.cosmos-portal {
+  border: 1px solid rgba(190, 238, 171, .44); border-radius: 11px; padding: 10px 13px;
+  font-size: 11px; letter-spacing: .6px; white-space: nowrap;
+  color: var(--ink); background: rgba(137, 213, 133, .12); cursor: pointer; transition: .2s;
+}
+.cosmos-portal:hover { background: rgba(147, 213, 140, .27); border-color: var(--lime); }
+.cosmos-detail-note { font-size: 10px; color: var(--muted-2); line-height: 1.8; margin: 14px 0 0; }
+.cosmos-lines {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 4px; width: 46px; flex-shrink: 0; min-height: 31px;
+}
+.cosmos-line { display: flex; gap: 6px; height: 5px; }
+.cosmos-line span { display: block; width: 100%; background: var(--lime); border-radius: 2px; box-shadow: 0 0 11px rgba(171, 245, 140, .18); }
+.cosmos-line.is-yin span { width: calc(50% - 3px); }
+.cosmos-choose { display: inline-flex; align-items: center; gap: 13px; }
+.cosmos-step-button { cursor: pointer; background: rgba(153, 210, 157, .1); border: 1px solid var(--outline); color: var(--ink); border-radius: 8px; width: 34px; height: 34px; font-size: 22px; }
+.cosmos-choose-count { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.cosmos-hex-content { justify-content: flex-start; }
+.cosmos-hex-glyph { font-family: "Segoe UI Symbol","Noto Sans Symbols 2",sans-serif; font-size: 51px; line-height: 1.1; color: var(--lime); }
+.cosmos-hex-summary { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.cosmos-hex-summary strong { font-weight: 500; font-size: 17px; letter-spacing: 2px; }
+.cosmos-hex-summary small { color: var(--muted); font-size: 11px; }
+.cosmos-hex-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 18px; }
+.cosmos-select-label { font-size: 11px; color: var(--muted); display: flex; flex-direction: column; gap: 7px; }
+.cosmos-select { background: rgba(28, 66, 55, .7); color: #ebffdf; border: 1px solid var(--outline); padding: 10px 11px; border-radius: 10px; font-size: 12px; max-width: 100%; width: 100%; }
+.cosmos-footnote {
+  font-size: 10px; letter-spacing: .45px; max-width: 720px;
+  color: var(--muted-2); text-align: center; line-height: 1.85; margin: 20px auto 0; padding: 0 12px;
+}
+@keyframes cosmos-drift { to { transform: rotate(360deg); } }
+
+body[data-period="day"] .home-switch { background: rgba(95, 164, 118, .09); }
+body[data-period="day"] .cosmos-node {
+  color: #225749; border-color: rgba(57, 139, 88, .28);
+  background: radial-gradient(circle at 50% 5%, rgba(242, 255, 236, .94), rgba(206, 241, 221, .87));
+}
+body[data-period="day"] .cosmos-node.is-active { border-color: #3f8d60; color: #174d39; box-shadow: 0 0 20px rgba(40, 125, 78, .12); }
+body[data-period="day"] .cosmos-core { background: radial-gradient(circle at 50% 5%, rgba(133,198,148,.65),rgba(35,100,77,.84)); }
+body[data-period="day"] .cosmos-detail { background: rgba(242, 255, 240, .46); }
+body[data-period="day"] .cosmos-select { background: rgba(247,255,247,.9); color: #214838; }
+body[data-period="day"] .cosmos-center-title { color: #f2ffdf; }
+body[data-period="day"] .cosmos-center-hint { color: #d4f1ce; }
+
+@media (max-width: 680px) {
+  .home-switch { margin-top: 18px; }
+  .cosmos { margin-top: 37px; }
+  .cosmos-small-caps { font-size: 8px; letter-spacing: 2px; }
+  .cosmos-heading-title { font-size: 23px; letter-spacing: 2px; }
+  .cosmos-heading-subtitle { padding: 0 8px; max-width: 345px; margin: auto; font-size: 10px; }
+  .cosmos-levels { justify-content: flex-start; margin-top: 18px; gap: 5px; padding-inline: 1px; }
+  .cosmos-level-button { min-width: 65px; padding: 7px 10px 8px; border-radius: 10px; }
+  .cosmos-level-button small { font-size: 9px; }
+  .cosmos-level-button span { font-size: 12px; }
+  .cosmos-orbit { width: min(100%, 480px); margin-top: 14px; }
+  .cosmos-node { width: 58px; height: 58px; border-radius: 13px; gap: 3px; }
+  .cosmos-node-symbol { font-size: 21px; }
+  .cosmos-node-label { font-size: 8px; letter-spacing: 0; }
+  .cosmos-node-minimal { width: 63px; height: 62px; }
+  .cosmos-node-minimal .cosmos-node-symbol { font-size: 20px; }
+  .cosmos-center { width: 30%; height: 30%; }
+  .cosmos-center-title { font-size: 13px; letter-spacing: 1px; }
+  .cosmos-center-hint { font-size: 7px; letter-spacing: 1px; }
+  .cosmos-detail { padding: 15px 16px 18px; margin-top: 2px; border-radius: 17px; }
+  .cosmos-detail-title { gap: 9px; }
+  .cosmos-detail-title h2 { font-size: 18px; }
+  .cosmos-stage-desc { font-size: 9px; }
+  .cosmos-detail-content { gap: 10px; flex-wrap: wrap; margin-top: 13px; }
+  .cosmos-detail-content p { min-width: 130px; font-size: 11px; }
+  .cosmos-portal { padding: 8px 10px; font-size: 10px; }
+  .cosmos-lines { width: 38px; }
+  .cosmos-line { height: 4px; gap: 4px; }
+  .cosmos-line.is-yin span { width: calc(50% - 2px); }
+  .cosmos-hex-glyph { font-size: 44px; }
+  .cosmos-footnote { font-size: 9px; margin-top: 15px; }
+  body[data-home-view="cosmos"] .below-scene { margin-top: 19px; }
+}
+@media (max-width: 370px) {
+  .cosmos-node { width: 53px; height: 53px; }
+  .cosmos-node-label { font-size: 7px; }
+  .cosmos-center-title { font-size: 12px; }
+  .cosmos-level-button { min-width: 60px; padding-inline: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-taiji { animation: none !important; }
+}
