@@ -1,0 +1,85 @@
+/* 天机台 · 轻玉命盘，沿用砚芽昼夜主题 */
+.tianji{--tianji-outline:var(--outline);--tianji-text:var(--ink);
+  margin:17px 0 4px;border:1px solid var(--outline);border-radius:20px;
+  background:linear-gradient(142deg,rgba(132,212,164,.09),rgba(122,207,140,.025));
+  padding:18px 15px;color:var(--ink);
+}
+.tianji-heading{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.tianji-seal{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;
+  color:var(--lime);background:rgba(134,218,152,.09);border:1px solid var(--outline);font-size:20px}
+.tianji-heading h3{margin:4px 0 0;font-size:21px;font-weight:550;letter-spacing:3px;
+  font-family:"Noto Serif SC","Songti SC",serif}
+.tianji-overline{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:600}
+.tianji-badge{margin-left:auto;border:1px solid var(--outline);border-radius:99px;
+  padding:5px 8px;color:var(--muted);font-size:9px;white-space:nowrap}
+.tianji-form{display:grid;gap:14px}
+.tianji-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tianji-label{display:flex;flex-direction:column;gap:7px;font-size:11px;color:var(--muted)}
+.tianji-label:first-child{grid-column:1/-1}
+.tianji-input{width:100%;min-width:0;border-radius:11px;
+  border:1px solid var(--outline);background:var(--glass);color:var(--ink);
+  padding:11px 10px;min-height:43px;font-size:14px;color-scheme:inherit}
+.tianji-input:focus,.tianji-import:focus{outline:2px solid var(--mint);outline-offset:2px}
+.tianji-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tianji-actions button{font-size:12px;padding:10px 13px;min-height:39px;border-radius:11px}
+.tianji-hint,.tianji-explain{font-size:11px;color:var(--muted);
+  line-height:1.75;margin:3px 0}
+.tianji-status{font-size:11px;color:var(--mint);line-height:1.6;margin:0;min-height:0}
+.tianji-status:empty{display:none}
+.tianji-error{color:#e9a08b}
+.tianji-output:empty{display:none}
+.tianji-output{display:grid;gap:14px;margin-top:22px}
+.tianji-chart{display:grid;gap:15px}
+.tianji-section-head{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.tianji-section-head strong{font-size:16px;font-weight:550;letter-spacing:2px}
+.tianji-pillars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.tianji-pillar{display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:14px 4px 12px;min-width:0;border-radius:13px;border:1px solid var(--outline);
+  background:linear-gradient(155deg,rgba(133,211,147,.12),rgba(142,209,182,.04))}
+.tianji-pillar small{font-size:10px;color:var(--muted);white-space:nowrap}
+.tianji-pillar .tianji-stem,.tianji-pillar .tianji-branch{
+  font-family:"Noto Serif SC","Songti SC",serif;font-size:clamp(25px,7vw,34px);
+  line-height:1.25;color:var(--lime);font-weight:550}
+.tianji-pillar .tianji-branch{color:var(--ink)}
+.tianji-pillar em{font-style:normal;font-size:10px;color:var(--mint);white-space:nowrap}
+.tianji-pillar .tianji-nayin{font-size:9px;letter-spacing:0}
+.tianji-daymaster{margin:0;padding:13px;border-radius:12px;
+  background:rgba(109,189,119,.09);display:flex;flex-wrap:wrap;align-items:baseline;gap:7px}
+.tianji-daymaster span{font-size:11px;color:var(--muted)}
+.tianji-daymaster strong{font-size:17px;color:var(--lime)}
+.tianji-daymaster span:last-child{width:100%;font-size:10px}
+.tianji-card{padding:15px;border:1px solid var(--outline);border-radius:15px;
+  background:rgba(112,199,144,.045)}
+.tianji-element-row{display:grid;grid-template-columns:19px minmax(0,1fr) 37px;gap:10px;
+  align-items:center;margin:10px 0;font-size:11px}
+.tianji-element-row strong{text-align:right;font-size:11px;font-weight:500;color:var(--muted)}
+.tianji-element-name{font-family:"Noto Serif SC","Songti SC",serif;font-size:14px}
+.tianji-element-track{height:8px;background:rgba(111,151,128,.18);border-radius:12px;overflow:hidden}
+.tianji-element-fill{display:block;width:0;height:100%;border-radius:inherit;transition:width .45s ease}
+.tianji-el-木{background:#7cbf83}.tianji-el-火{background:#d68f88}
+.tianji-el-土{background:#bcad7a}.tianji-el-金{background:#aec9ce}.tianji-el-水{background:#7aabc2}
+.tianji-flow{display:flex;align-items:center;gap:12px;padding:3px 0 9px}
+.tianji-flow strong{font-family:"Noto Serif SC","Songti SC",serif;
+  font-size:35px;letter-spacing:4px;color:var(--lime)}
+.tianji-flow span{color:var(--muted);font-size:11px}
+.tianji-bridge{margin-top:20px;border-top:1px solid var(--outline);padding-top:18px}
+.tianji-bridge summary{font-size:12px;color:var(--ink);cursor:pointer;
+  font-weight:550;letter-spacing:1px;padding:5px 0 10px}
+.tianji-bridge .tianji-actions{margin:12px 0}
+.tianji-import{width:100%;min-height:112px;border-radius:12px;resize:vertical;
+  border:1px solid var(--outline);padding:11px;background:var(--glass);
+  color:var(--ink);font:11px/1.6 ui-monospace,monospace}
+.tianji-meta-line{display:flex;gap:12px;justify-content:space-between;
+  align-items:baseline;border-bottom:1px solid var(--line);padding:7px 0;font-size:11px}
+.tianji-meta-line span{color:var(--muted)}
+.tianji-meta-line strong{font-size:13px;font-weight:550;text-align:right}
+body[data-period="day"] .tianji{
+  background:linear-gradient(145deg,rgba(255,255,245,.92),rgba(209,235,204,.74));
+  box-shadow:0 12px 36px rgba(87,146,93,.09)}
+body[data-period="day"] .tianji-pillar{background:rgba(248,255,238,.78)}
+body[data-period="day"] .tianji-card{background:rgba(250,255,244,.68)}
+body[data-period="day"] .tianji-input,
+body[data-period="day"] .tianji-import{background:rgba(255,255,252,.9)}
+body[data-period="day"] .tianji-error{color:#ad5746}
+@media(min-width:470px){.tianji{padding:22px 20px}.tianji-fields{grid-template-columns:1.5fr 1fr 1fr}.tianji-label:first-child{grid-column:auto}}
+@media(max-width:360px){.tianji{padding:14px 11px}.tianji-pillars{gap:4px}.tianji-pillar{padding:10px 2px}.tianji-pillar .tianji-nayin{font-size:8px}}
