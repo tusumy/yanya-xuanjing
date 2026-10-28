@@ -48,11 +48,13 @@
   root.innerHTML =
     '<section class="ritual" aria-label="砚芽玄境太极衍化交互首页">'+
       '<div class="ritual-top"><span class="ritual-eyebrow">YANYA / THE AWAKENING</span>'+
-      '<span class="ritual-top-mark" aria-hidden="true">✧ · ◈ · ✧</span></div>'+
+      '<span class="ritual-top-mark" aria-hidden="true">✧ · ◈ · ✧</span>'+
+      '<button class="ritual-depth-toggle" id="ritualDepthToggle" type="button" aria-label="切换立体和平面玄盘" aria-pressed="true">立体 · 开</button></div>'+
       '<div class="ritual-heading"><span class="ritual-title">万象，归于一念。</span>'+
       '<span class="ritual-subtitle">天地未语，星轨先行。</span></div>'+
       '<div class="ritual-stage" id="ritualStage">'+
         '<div class="ritual-aurora" aria-hidden="true"></div>'+
+        '<div class="ritual-3d-base" aria-hidden="true"><i class="ritual-3d-rim"></i><i class="ritual-3d-inner"></i></div>'+
         '<div class="ritual-stardust" id="ritualStardust" aria-hidden="true"></div>'+
         '<div class="ritual-compass" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span></div>'+
         '<svg id="ritualGeometry" class="ritual-geometry" viewBox="0 0 720 720" aria-hidden="true"></svg>'+
@@ -90,6 +92,23 @@
   const detail=document.getElementById("ritualDetail");
   const caption=document.getElementById("ritualStageCaption");
   const core=document.getElementById("ritualCore");
+
+  // A lightweight CSS perspective, independent from the orbit angle.
+  // Users can switch to flat rendering on phones with fragile GPU compositors.
+  const depthButton=document.getElementById("ritualDepthToggle");
+  const depthStored=read("ritual.depth.v1",true);
+  let depthEnabled=depthStored!==false;
+  const setDepth=(enabled)=>{
+    depthEnabled=Boolean(enabled);
+    stage.classList.toggle("ritual-is-3d",depthEnabled);
+    depthButton.textContent=depthEnabled?"立体 · 开":"立体 · 关";
+    depthButton.setAttribute("aria-pressed",String(depthEnabled));
+    depthButton.setAttribute("title",depthEnabled?"切换为平面玄盘":"切换为立体玄盘");
+    save("ritual.depth.v1",depthEnabled);
+  };
+  depthButton.addEventListener("click",()=>setDepth(!depthEnabled));
+  setDepth(depthEnabled);
+
 
   // Independent mechanical ring. Rune taps still select; dragging them rotates instead.
   const motionPref = typeof window.matchMedia === "function"
