@@ -83,3 +83,47 @@ body[data-period="day"] .tianji-import{background:rgba(255,255,252,.9)}
 body[data-period="day"] .tianji-error{color:#ad5746}
 @media(min-width:470px){.tianji{padding:22px 20px}.tianji-fields{grid-template-columns:1.5fr 1fr 1fr}.tianji-label:first-child{grid-column:auto}}
 @media(max-width:360px){.tianji{padding:14px 11px}.tianji-pillars{gap:4px}.tianji-pillar{padding:10px 2px}.tianji-pillar .tianji-nayin{font-size:8px}}
+
+/* SEED 08 · Form is sized against the side panel, not the whole viewport.
+   A 480px drawer on a 4K monitor is still a narrow form. */
+.panel .tianji{width:100%;max-width:100%;min-width:0}
+.panel .tianji-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:11px;
+}
+.panel .tianji-label:first-child{grid-column:1/-1}
+.panel .tianji-label,.panel .tianji-input{min-width:0;max-width:100%}
+.panel .tianji-output,
+.panel .tianji-card,
+.panel .tianji-chart,
+.panel .tianji-pillars{
+  min-width:0;
+  max-width:100%;
+}
+.panel .tianji-flow{flex-wrap:wrap;gap:5px 10px}
+.panel .tianji-meta-line strong{
+  min-width:0;max-width:62%;
+  overflow-wrap:anywhere;
+}
+.panel .tianji-bridge{min-width:0}
+.panel .tianji-bridge summary{overflow-wrap:anywhere}
+.panel .tianji-import{max-width:100%;min-width:0}
+@media (max-width: 680px){
+  .panel .tianji{padding:16px 13px;border-radius:17px}
+  .panel .tianji-heading{margin-bottom:16px}
+  .panel .tianji-pillars{gap:5px}
+  .panel .tianji-pillar{padding:10px 3px}
+  .panel .tianji-pillar .tianji-stem,
+  .panel .tianji-pillar .tianji-branch{font-size:clamp(23px,6.6vw,29px)}
+  .panel .tianji-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel .tianji-actions button{width:100%;min-width:0;padding:10px 6px;white-space:normal}
+}
+@media (max-width: 350px){
+  .panel .tianji{padding:13px 10px}
+  .panel .tianji-pillars{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .panel .tianji-pillar{padding:12px 7px}
+  .panel .tianji-pillar .tianji-stem,
+  .panel .tianji-pillar .tianji-branch{font-size:29px}
+  .panel .tianji-pillar .tianji-nayin{font-size:10px}
+}
