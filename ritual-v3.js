@@ -111,7 +111,17 @@
   };
   const paintDial=()=>stage.style.setProperty("--ritual-rotation",dial.angle+"deg");
   const persistDial=()=>save("ritual.rotation",Math.round(dial.angle*100)/100);
-  const noAutoMotion=()=>root.classList.contains("ritual-low-motion") ||
+  // Android/phone browsers may flash black compositor tiles when multiple large
+  // transparent SVG/filter layers repaint continuously. Keep the touch dial,
+  // but do not animate it automatically on compact/coarse-pointer screens.
+  const mobileSafe = typeof window.matchMedia === "function" &&
+    (window.matchMedia("(max-width: 760px)").matches ||
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches);
+  if (mobileSafe) {
+    root.classList.add("ritual-mobile-safe");
+    document.body.classList.add("ritual-safe-render");
+  }
+  const noAutoMotion=()=>mobileSafe || root.classList.contains("ritual-low-motion") ||
     Boolean(motionPref && motionPref.matches);
   paintDial();
 
@@ -412,5 +422,6 @@
   // The ring now rotates by drag. Stage progression stays on the central Taiji and arrows.
   if(navigator.connection && navigator.connection.saveData)root.classList.add("ritual-low-motion");
   draw();
-  requestAnimationFrame(animateDial);
+  // Manual pointer drag always works; avoid a permanent 60fps animation on phones.
+  if (!mobileSafe && !noAutoMotion()) requestAnimationFrame(animateDial);
 })();
