@@ -1,0 +1,149 @@
+/* 砚芽·玄球 | SEED 10. A projected celestial globe, not a tilted plate.
+   Only one lightweight canvas repaints. There are no blur filters on the sphere,
+   no WebGL and no oversized always-promoted 3D layers on phones. */
+.ritual-sphere-canvas{
+  display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  cursor:grab;
+  touch-action:none;
+  outline-offset:-12px;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.ritual-sphere-canvas:active{cursor:grabbing}
+.ritual-sphere-canvas[hidden]{display:none!important}
+.ritual-sphere-canvas:focus-visible{
+  outline:2px solid var(--lime);
+  border-radius:50%;
+}
+.ritual-stage.ritual-sphere-mode{
+  cursor:default;
+  perspective:none;
+  isolation:isolate;
+}
+.ritual-stage.ritual-sphere-mode .ritual-3d-base,
+.ritual-stage.ritual-sphere-mode .ritual-geometry,
+.ritual-stage.ritual-sphere-mode .ritual-nodes,
+.ritual-stage.ritual-sphere-mode .ritual-compass,
+.ritual-stage.ritual-sphere-mode .ritual-aurora,
+.ritual-stage.ritual-sphere-mode .ritual-stardust,
+.ritual-stage.ritual-sphere-mode .ritual-north,
+.ritual-stage.ritual-sphere-mode .ritual-south{
+  display:none!important;
+}
+.ritual-stage.ritual-sphere-mode::before{
+  opacity:.28;
+  background:radial-gradient(circle at center,rgba(83,168,119,.11),transparent 66%);
+  box-shadow:none;
+}
+.ritual-stage.ritual-sphere-mode::after{
+  opacity:0;
+  box-shadow:none;
+  border:0;
+}
+.ritual-stage .ritual-heart{
+  width:clamp(90px,28%,174px);
+  transition:width .18s ease;
+}
+.ritual-stage.ritual-sphere-mode .ritual-heart{
+  width:clamp(72px,21%,109px);
+  z-index:5;
+  transform:translate(-50%,-50%)!important;
+}
+.ritual-stage .ritual-heart-halo{
+  border-color:rgba(174,237,173,.12);
+  box-shadow:0 0 28px rgba(97,173,127,.13);
+}
+.ritual-stage.ritual-sphere-mode .ritual-heart-halo{
+  inset:-20%;
+  border:none;
+  background:radial-gradient(circle,rgba(207,255,191,.15),transparent 68%);
+  box-shadow:none;
+}
+.ritual-stage.ritual-sphere-mode .ritual-heart-halo::before,
+.ritual-stage.ritual-sphere-mode .ritual-heart-halo::after{
+  display:none;
+}
+.ritual-stage .ritual-core{
+  position:relative;
+  width:90%;
+  color:#e8ffe0;
+  border:1px solid rgba(216,255,188,.72);
+  background:
+    radial-gradient(circle at 29% 23%,rgba(237,255,216,.79),transparent 19%),
+    radial-gradient(circle at 35% 26%,#92d6ab 1%,#317e72 45%,#0e454b 80%,#0a303b 100%);
+  box-shadow:inset 0 2px 15px rgba(244,255,224,.2),
+    inset 0 -13px 17px rgba(2,32,41,.29),
+    0 7px 19px rgba(0,18,32,.29);
+  transform:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.ritual-stage.ritual-sphere-mode .ritual-core{
+  box-shadow:inset 0 2px 13px rgba(248,255,227,.25),
+    inset 0 -12px 15px rgba(2,24,34,.29),
+    0 9px 19px rgba(0,16,29,.32);
+}
+.ritual-stage .ritual-core:hover,
+.ritual-stage .ritual-core:focus-visible{
+  transform:none;
+  border-color:#f1ffdc;
+  box-shadow:inset 0 2px 16px rgba(255,255,239,.33),
+    0 9px 27px rgba(131,234,169,.23);
+}
+.ritual-core-spark{
+  display:block;
+  font-family:"Songti SC",serif;
+  font-size:clamp(30px,5.3vw,52px);
+  line-height:1;
+  margin-top:-7%;
+  color:#ebffe2;
+  text-shadow:0 0 11px rgba(247,255,216,.42);
+  pointer-events:none;
+}
+.ritual-stage.ritual-sphere-mode .ritual-core-spark{
+  font-size:clamp(29px,6.4vw,46px);
+  margin-top:-13%;
+}
+.ritual-stage .ritual-core-invite{
+  bottom:11%;
+  font-size:10px;
+  letter-spacing:2px;
+  color:#e1f9dc;
+  pointer-events:none;
+}
+.ritual-stage.ritual-sphere-mode .ritual-core-invite{
+  bottom:11%;
+  font-size:clamp(8px,1.9vw,10px);
+  letter-spacing:1px;
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-stage .ritual-core{
+  color:#2e7855;
+  background:
+    radial-gradient(circle at 27% 19%,rgba(255,255,245,.98),transparent 22%),
+    radial-gradient(circle at 36% 28%,#f2ffdc,#a8dcaa 45%,#66b39a 78%,#4c967f 100%);
+  border-color:rgba(47,136,83,.65);
+  box-shadow:inset 0 2px 12px rgba(255,255,255,.74),
+    inset 0 -9px 14px rgba(33,117,101,.18),
+    0 8px 19px rgba(77,143,91,.18);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-core-spark{
+  color:#317959;
+  text-shadow:0 0 10px rgba(235,255,212,.81);
+}
+body[data-home-view="cosmos"][data-period="day"] .ritual-core-invite{color:#296b52}
+body[data-home-view="cosmos"][data-period="day"] .ritual-stage.ritual-sphere-mode::before{
+  background:radial-gradient(circle,rgba(125,197,132,.18),transparent 67%);
+}
+/* The old disk is still selectable, but sphere is the recommended presentation. */
+.ritual-stage:not(.ritual-sphere-mode) .ritual-core-spark{font-size:clamp(38px,6vw,58px)}
+@media (max-width:680px){
+  .ritual-stage.ritual-sphere-mode .ritual-heart{width:clamp(66px,20%,86px)}
+  .ritual-stage.ritual-sphere-mode .ritual-core{box-shadow:
+    inset 0 2px 9px rgba(248,255,227,.19),0 5px 12px rgba(0,16,29,.2)}
+  .ritual-stage.ritual-sphere-mode::before{background:none}
+  .ritual-stage .ritual-core-invite{font-size:8px;letter-spacing:1px}
+}
