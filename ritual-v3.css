@@ -515,3 +515,44 @@ body[data-home-view="cosmos"][data-period="day"] .ritual-yao-line i{background:#
 body[data-home-view="cosmos"][data-period="day"] .ritual-bottom{
   color:#69947b;border-top-color:rgba(74,137,86,.2);
 }
+
+
+/* Seed 07 · Mobile compositor safety.
+   Recorded symptom: intermittent hard-edged black tiles while the page is idle.
+   On touch phones keep the dial interactive, but avoid expensive continuously
+   repainted GPU surfaces (filtered aurora, twinkling, forced layers and glass). */
+body.ritual-safe-render[data-home-view="cosmos"]{
+  background-attachment:scroll!important;
+  transition:none;
+}
+.ritual-mobile-safe .ritual-geometry,
+.ritual-mobile-safe .ritual-nodes,
+.ritual-mobile-safe .ritual-compass{
+  will-change:auto!important;
+  backface-visibility:visible!important;
+  transition:none!important;
+}
+.ritual-mobile-safe .ritual-aurora{
+  animation:none!important;
+  filter:none!important;
+  opacity:.68;
+}
+.ritual-mobile-safe .ritual-taiji,
+.ritual-mobile-safe .ritual-star,
+.ritual-mobile-safe .ritual-core.ritual-awaken{
+  animation:none!important;
+}
+.ritual-mobile-safe .ritual-geometry .ritual-lodestar,
+.ritual-mobile-safe .ritual-geometry .ritual-mark-strong,
+.ritual-mobile-safe .ritual-geometry .ritual-emergent{
+  filter:none!important;
+}
+body.ritual-safe-render[data-home-view="cosmos"] .ritual-detail,
+body.ritual-safe-render[data-home-view="cosmos"] .dock{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+body.ritual-safe-render[data-home-view="cosmos"] .topbar,
+body.ritual-safe-render[data-home-view="cosmos"] .ritual-detail{
+  transition:none;
+}
