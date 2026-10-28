@@ -49,7 +49,7 @@
     '<section class="ritual" aria-label="砚芽玄境太极衍化交互首页">'+
       '<div class="ritual-top"><span class="ritual-eyebrow">YANYA / THE AWAKENING</span>'+
       '<span class="ritual-top-mark" aria-hidden="true">✧ · ◈ · ✧</span>'+
-      '<button class="ritual-depth-toggle" id="ritualDepthToggle" type="button" aria-label="切换立体和平面玄盘" aria-pressed="true">立体 · 开</button></div>'+
+      '<button class="ritual-depth-toggle" id="ritualDepthToggle" type="button" aria-label="切换球体和平面玄盘" aria-pressed="true">球体 · 开</button></div>'+
       '<div class="ritual-heading"><span class="ritual-title">万象，归于一念。</span>'+
       '<span class="ritual-subtitle">天地未语，星轨先行。</span></div>'+
       '<div class="ritual-stage" id="ritualStage">'+
@@ -62,14 +62,8 @@
         '<div class="ritual-heart">'+
           '<div class="ritual-heart-halo"></div>'+
           '<button type="button" id="ritualCore" class="ritual-core" aria-label="触碰太极，推演下一层">'+
-            '<svg class="ritual-taiji" viewBox="0 0 100 100" aria-hidden="true">'+
-              '<circle cx="50" cy="50" r="48" fill="#e6f8d4"/>'+
-              '<path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2 Z" fill="#103d35"/>'+
-              '<circle cx="50" cy="26" r="6.4" fill="#e6f8d4"/>'+
-              '<circle cx="50" cy="74" r="6.4" fill="#103d35"/>'+
-              '<circle cx="50" cy="50" r="48" fill="none" stroke="#f4fbdc" stroke-width="1" stroke-opacity=".6"/>'+
-            '</svg>'+
-            '<span class="ritual-core-invite">触 · 生</span>'+
+            '<span class="ritual-core-spark" aria-hidden="true">✧</span>'+
+            '<span class="ritual-core-invite">触 · 演</span>'+
           '</button>'+
         '</div>'+
         '<div class="ritual-north" aria-hidden="true">N · 00</div>'+
@@ -93,22 +87,29 @@
   const caption=document.getElementById("ritualStageCaption");
   const core=document.getElementById("ritualCore");
 
-  // A lightweight CSS perspective, independent from the orbit angle.
-  // Users can switch to flat rendering on phones with fragile GPU compositors.
+  // Real 3D globe projection with an independently selected flat fallback.
   const depthButton=document.getElementById("ritualDepthToggle");
-  const depthStored=read("ritual.depth.v1",true);
-  let depthEnabled=depthStored!==false;
-  const setDepth=(enabled)=>{
-    depthEnabled=Boolean(enabled);
-    stage.classList.toggle("ritual-is-3d",depthEnabled);
-    depthButton.textContent=depthEnabled?"立体 · 开":"立体 · 关";
-    depthButton.setAttribute("aria-pressed",String(depthEnabled));
-    depthButton.setAttribute("title",depthEnabled?"切换为平面玄盘":"切换为立体玄盘");
-    save("ritual.depth.v1",depthEnabled);
-  };
-  depthButton.addEventListener("click",()=>setDepth(!depthEnabled));
-  setDepth(depthEnabled);
-
+  const sphere=window.YanyaSphere?.mount(stage,{
+    getLevel:()=>state.level,
+    getSelected:()=>state.trigram,
+    getChosen:()=>state.chosen,
+    onSelectGua:index=>selectGua(index)
+  })||null;
+  let sphereActive=Boolean(sphere)&&read("ritual.sphere.v1",true)!==false;
+  function setSphere(enabled){
+    sphereActive=Boolean(enabled&&sphere);
+    stage.classList.toggle("ritual-sphere-mode",sphereActive);
+    stage.classList.remove("ritual-is-3d");
+    spots.inert=sphereActive;
+    depthButton.textContent=sphereActive?"球体 · 开":"球体 · 关";
+    depthButton.setAttribute("aria-pressed",String(sphereActive));
+    depthButton.setAttribute("title",sphereActive?"切到平面玄盘":"切到可旋转球体");
+    sphere?.setActive(sphereActive);
+    save("ritual.sphere.v1",sphereActive);
+    if(typeof nav==="function"&&state.level)nav();
+  }
+  depthButton.addEventListener("click",()=>setSphere(!sphereActive));
+  setSphere(sphereActive);
 
   // Independent mechanical ring. Rune taps still select; dragging them rotates instead.
   const motionPref = typeof window.matchMedia === "function"
@@ -145,6 +146,7 @@
   paintDial();
 
   stage.addEventListener("pointerdown",event=>{
+    if(sphereActive)return;
     if(event.isPrimary===false)return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
     if(event.target.closest && event.target.closest("#ritualCore"))return;
@@ -156,6 +158,7 @@
   });
 
   stage.addEventListener("pointermove",event=>{
+    if(sphereActive)return;
     if(dial.pointerId!==event.pointerId)return;
     if(!dial.dragging){
       if(Math.hypot(event.clientX-dial.startX,event.clientY-dial.startY)<7)return;
@@ -204,7 +207,7 @@
   const animateDial=(timestamp)=>{
     const elapsed=dial.lastFrame?clamp(timestamp-dial.lastFrame,0,55):0;
     dial.lastFrame=timestamp;
-    if(dial.pointerId===null && state.view==="cosmos" && !document.hidden && !noAutoMotion()){
+    if(!sphereActive && dial.pointerId===null && state.view==="cosmos" && !document.hidden && !noAutoMotion()){
       if(Math.abs(dial.inertia)>.3){
         dial.angle=(dial.angle+dial.inertia*elapsed/1000+360)%360;
         dial.inertia*=Math.exp(-elapsed/680);
@@ -361,6 +364,7 @@
       progress.append(b);
     });
     caption.textContent="第 "+String(STAGES.indexOf(state.level)+1).padStart(2,"0")+" 道 · "+String(state.level).padStart(2,"0")+" 象";
+    if(sphereActive)caption.textContent+=" · 拖动旋转天球";
     stage.dataset.power=String(state.level);
   }
   const goTo=(key)=>{
@@ -434,6 +438,7 @@
   }
   function draw(){
     ringGeometry();nodes();nav();renderDetail();
+    sphere?.refresh();
   }
   document.getElementById("ritualPrev").addEventListener("click",()=>shift(-1));
   document.getElementById("ritualNext").addEventListener("click",()=>shift(1));
