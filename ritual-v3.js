@@ -96,6 +96,7 @@
     onSelectGua:index=>selectGua(index)
   })||null;
   let sphereActive=Boolean(sphere)&&read("ritual.sphere.v1",true)!==false;
+  let flatCanAnimate=false;
   function setSphere(enabled){
     sphereActive=Boolean(enabled&&sphere);
     stage.classList.toggle("ritual-sphere-mode",sphereActive);
@@ -105,6 +106,7 @@
     depthButton.setAttribute("aria-pressed",String(sphereActive));
     depthButton.setAttribute("title",sphereActive?"切到平面玄盘":"切到可旋转球体");
     sphere?.setActive(sphereActive);
+    if(!sphereActive && flatCanAnimate)startFlatAnimation();
     save("ritual.sphere.v1",sphereActive);
     if(typeof nav==="function"&&state.level)nav();
   }
@@ -204,7 +206,10 @@
   },true);
 
   // Momentum slows into a calm self-turning orbit; no full-scene rotation.
+  let flatAnimationFrame=0;
   const animateDial=(timestamp)=>{
+    flatAnimationFrame=0;
+    if(sphereActive){dial.lastFrame=0;return;}
     const elapsed=dial.lastFrame?clamp(timestamp-dial.lastFrame,0,55):0;
     dial.lastFrame=timestamp;
     if(!sphereActive && dial.pointerId===null && state.view==="cosmos" && !document.hidden && !noAutoMotion()){
@@ -217,8 +222,13 @@
       }
       paintDial();
     }
-    requestAnimationFrame(animateDial);
+    flatAnimationFrame=requestAnimationFrame(animateDial);
   };
+  function startFlatAnimation(){
+    if(!sphereActive && !flatAnimationFrame && !noAutoMotion()){
+      flatAnimationFrame=requestAnimationFrame(animateDial);
+    }
+  }
   document.addEventListener("visibilitychange",()=>{
     dial.lastFrame=0;
     if(document.hidden)persistDial();
@@ -447,5 +457,6 @@
   if(navigator.connection && navigator.connection.saveData)root.classList.add("ritual-low-motion");
   draw();
   // Manual pointer drag always works; avoid a permanent 60fps animation on phones.
-  if (!mobileSafe && !noAutoMotion()) requestAnimationFrame(animateDial);
+  flatCanAnimate=true;
+  startFlatAnimation();
 })();
