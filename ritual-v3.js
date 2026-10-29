@@ -62,7 +62,7 @@
         '<div class="ritual-heart">'+
           '<div class="ritual-heart-halo"></div>'+
           '<button type="button" id="ritualCore" class="ritual-core" aria-label="触碰太极，推演下一层">'+
-            '<span class="ritual-core-spark" aria-hidden="true">✧</span>'+
+            '<span class="ritual-core-spark" aria-hidden="true">玄</span>'+
             '<span class="ritual-core-invite">触 · 演</span>'+
           '</button>'+
         '</div>'+
@@ -95,7 +95,7 @@
     getChosen:()=>state.chosen,
     onSelectGua:index=>selectGua(index)
   })||null;
-  let sphereActive=Boolean(sphere)&&read("ritual.sphere.v1",true)!==false;
+  let sphereActive=Boolean(sphere)&&read("ritual.sphere.v2",false)===true;
   let flatCanAnimate=false;
   function setSphere(enabled){
     sphereActive=Boolean(enabled&&sphere);
@@ -107,7 +107,7 @@
     depthButton.setAttribute("title",sphereActive?"切到平面玄盘":"切到可旋转球体");
     sphere?.setActive(sphereActive);
     if(!sphereActive && flatCanAnimate)startFlatAnimation();
-    save("ritual.sphere.v1",sphereActive);
+    save("ritual.sphere.v2",sphereActive);
     if(typeof nav==="function"&&state.level)nav();
   }
   depthButton.addEventListener("click",()=>setSphere(!sphereActive));
