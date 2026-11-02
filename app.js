@@ -7,7 +7,7 @@
   const CHAT_KEY = PREFIX + "chat-preview.v1";
   const PERIOD_KEY = PREFIX + "period-override.v1";
   const LOCATIONS = {
-    heart: { title: "岛心", kicker: "HEART OF THE ISLAND" },
+    heart: { title: "岛心 · 对话", kicker: "CHAT / OFFLINE PREVIEW" },
     stars: { title: "星阁", kicker: "CONSTELLATION OF MEMORIES" },
     oracle: { title: "签庭", kicker: "THE ORACLE GARDEN" },
     library: { title: "藏书楼", kicker: "LIBRARY OF WORLDS" },
@@ -106,7 +106,7 @@
   function renderHeart() {
     content.append(lead("从这里走进我们日常的对话。现在是离线界面原型，尚未连接旧砚屿的模型、角色与聊天记录。"));
     const messageArea = element("div", "module-card");
-    const info = element("h3", "", "✦ 对话主殿 · 离线预览");
+    const info = element("h3", "", "✦ 对话主殿 · 离线预览（尚未接入 AI）");
     const chatBox = element("div", "chat-preview");
     const greeting = element("div", "chat-bubble", "你来了。岛上的第一盏灯已经点亮，等你给它添一点故事。");
     chatBox.append(greeting);
