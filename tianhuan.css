@@ -657,3 +657,57 @@ body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .tianhuan-inst
 @media(prefers-reduced-motion:reduce){
   .tianhuan-instrument .tianhuan-ring-hit{transition:none!important}
 }
+
+
+/* SEED 15 · The eight trigram plaques are a seventh, independently moving orbit.
+   Hanzi and the actual trigram sign stay upright as their positions change. */
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  line-height:1.05;
+  padding:2px 1px 1px;
+  touch-action:none!important;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:grab;
+  transform:translate(-50%,-50%);
+  transition:background .14s,border-color .14s,box-shadow .14s;
+}
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node:hover,
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node:focus-visible,
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node.is-active{
+  transform:translate(-50%,-50%)!important;
+}
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node:active,
+.tianhuan-layout .tianhuan-bagua-dragging .tianhuan-bagua-node{
+  cursor:grabbing;
+}
+.tianhuan-layout .tianhuan-bagua-hanzi{
+  display:block;
+  font-family:"Noto Serif SC","Songti SC","STSong",serif;
+  font-weight:550;
+  font-size:clamp(15px,2.2vw,23px);
+  letter-spacing:0;
+  pointer-events:none;
+}
+.tianhuan-layout .tianhuan-bagua-sign{
+  display:block;
+  font-family:"Segoe UI Symbol","Noto Sans Symbols 2",sans-serif;
+  font-weight:400;
+  line-height:1;
+  font-size:clamp(9px,1.4vw,14px);
+  opacity:.76;
+  pointer-events:none;
+}
+@media(max-width:680px){
+ .tianhuan-layout .tianhuan-bagua-hanzi{font-size:clamp(14px,4vw,18px)}
+ .tianhuan-layout .tianhuan-bagua-sign{font-size:clamp(8px,2.5vw,11px)}
+ .tianhuan-layout .ritual-nodes .tianhuan-bagua-node{
+   width:clamp(34px,9.5vw,43px);
+   height:clamp(34px,9.5vw,43px);
+   border-width:1.5px;
+ }
+}
