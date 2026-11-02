@@ -491,3 +491,169 @@ body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-bottom
  .tianhuan-instrument{transition:none!important}
  .tianhuan-card{transition:none!important}
 }
+
+
+/* SEED 14 · Each orbit is independent; remove inherited whole-dial rotation.
+   Prevent the partial horizontal cut-off shown on the 360px phone screenshot. */
+html:has(.tianhuan-layout),
+body:has(.tianhuan-layout){
+  max-width:100%;
+  overflow-x:clip;
+}
+body[data-home-view="cosmos"] .shell:has(.tianhuan-layout){
+  box-sizing:border-box;
+  width:100%;
+  max-width:1180px;
+  min-width:0;
+  margin-inline:auto;
+}
+body[data-home-view="cosmos"] main:has(.tianhuan-layout),
+body[data-home-view="cosmos"] #cosmosMount,
+body[data-home-view="cosmos"] .tianhuan-layout,
+body[data-home-view="cosmos"] .tianhuan-features,
+body[data-home-view="cosmos"] .tianhuan-layout .ritual-detail{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+body[data-home-view="cosmos"] #cosmosMount{
+  display:block;
+  width:100%;
+  margin-inline:auto;
+}
+body[data-home-view="cosmos"] .tianhuan-layout{
+  left:auto!important;
+  right:auto!important;
+  width:100%;
+  margin-inline:auto!important;
+  transform:none!important;
+}
+.tianhuan-layout .ritual-stage{
+  box-sizing:border-box;
+  left:auto!important;
+  right:auto!important;
+  width:min(100%,655px);
+  margin-inline:auto!important;
+  transform:none!important;
+  overflow:hidden;
+  border-radius:50%;
+}
+.tianhuan-layout .ritual-geometry{display:none!important}
+.tianhuan-layout .ritual-nodes{
+  transform:none!important;
+  will-change:auto!important;
+}
+.tianhuan-layout .tianhuan-instrument{
+  overflow:visible;
+  transform:none!important;
+  will-change:auto!important;
+  pointer-events:auto!important;
+  touch-action:none;
+}
+.tianhuan-instrument > defs,
+.tianhuan-instrument > path,
+.tianhuan-instrument > circle,
+.tianhuan-instrument > g:not(.tianhuan-rotor-scene),
+.tianhuan-instrument .tianhuan-rotor,
+.tianhuan-instrument .tianhuan-rotor *:not(.tianhuan-ring-hit){
+  pointer-events:none;
+}
+.tianhuan-instrument .tianhuan-ring-hit{
+  pointer-events:stroke!important;
+  touch-action:none;
+  cursor:grab;
+  stroke-opacity:.002;
+}
+.tianhuan-instrument .tianhuan-ring-hit:active{cursor:grabbing}
+.tianhuan-instrument .tianhuan-ring-hit:focus-visible{
+  stroke:#f4d899;
+  stroke-opacity:.37;
+  outline:none;
+}
+.tianhuan-layout .ritual-stage.tianhuan-dragging{cursor:grabbing}
+.tianhuan-layout .ritual-stage.tianhuan-dragging .ritual-glyph{
+  transition:none!important;
+}
+.tianhuan-layout .ritual-stage .ritual-heart{
+  pointer-events:none;
+}
+.tianhuan-layout .ritual-stage .ritual-core{
+  pointer-events:auto;
+}
+/* More of the design reference: clean portrait framing, bronzed ring,
+   uncluttered description and true dark/moss jade hierarchy. */
+.tianhuan-layout .tianhuan-daily{
+  width:100%;
+  max-width:625px;
+}
+.tianhuan-layout .ritual-detail,
+.tianhuan-layout .tianhuan-features{
+  margin-inline:auto;
+}
+.tianhuan-layout .tianhuan-features{
+  width:100%;
+  max-width:890px;
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .tianhuan-instrument{
+  filter:drop-shadow(0 7px 8px rgba(49,96,79,.09));
+}
+@media (max-width:680px){
+  body[data-home-view="cosmos"] .shell:has(.tianhuan-layout){
+    padding-inline:clamp(14px,4.6vw,20px)!important;
+    padding-bottom:calc(100px + env(safe-area-inset-bottom));
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout{
+    padding-inline:0!important;
+    width:100%;
+    max-width:100%;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-stage{
+    width:100%;
+    max-width:100%;
+    aspect-ratio:1;
+    margin-inline:auto;
+    overflow:hidden;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-daily,
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-detail,
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-features,
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-navigation,
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-stage-caption{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    margin-inline:auto;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-daily{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 10px;
+    padding-inline:12px;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-detail{
+    padding:17px 14px;
+    border-radius:17px;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-features{
+    gap:10px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-card{
+    min-width:0;
+    padding:7px;
+    overflow:hidden;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-card-copy{
+    overflow-wrap:anywhere;
+  }
+  body[data-home-view="cosmos"] .tianhuan-layout .ritual-bottom{
+    width:100%;margin-inline:auto;
+  }
+}
+@media(max-width:359px){
+  body[data-home-view="cosmos"] .tianhuan-layout .tianhuan-card-copy small{font-size:9px}
+}
+/* The ring and its clickable nodes remain coherent at all viewport sizes. */
+@media(prefers-reduced-motion:reduce){
+  .tianhuan-instrument .tianhuan-ring-hit{transition:none!important}
+}
