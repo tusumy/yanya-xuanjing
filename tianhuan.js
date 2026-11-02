@@ -104,6 +104,211 @@
   svg.append(marks);
   stage.insertBefore(svg,nodes);
 
+  // Six concentric components have independent pointer-driven angles.
+  // Each has an enlarged invisible stroke hit target; trigram buttons stay
+  // above these rings and retain their existing click handlers.
+  const ringSpecs=[
+    {id:"outer",name:"外盘刻度环",radius:315,speed:.34},
+    {id:"jade",name:"玉环",radius:281,speed:-.58},
+    {id:"middle",name:"星辰铜环",radius:247,speed:.48},
+    {id:"orbitA",name:"外侧斜星轨",radius:242,speed:-.29},
+    {id:"orbitB",name:"内侧斜星轨",radius:215,speed:.41},
+    {id:"inner",name:"中心星盘",radius:155,speed:-.37}
+  ];
+  let previousAngles=[];
+  try{
+    const stored=JSON.parse(localStorage.getItem("yanya.xuanjing.tianhuan.rings.v1"));
+    if(Array.isArray(stored))previousAngles=stored;
+  }catch(_){}
+  const rings=ringSpecs.map((spec,i)=>{
+    const group=create("g",{class:"tianhuan-rotor tianhuan-rotor-"+spec.id});
+    group.dataset.ring=spec.id;
+    group.dataset.title=spec.name;
+    return {...spec,group,angle:Number.isFinite(previousAngles[i])?previousAngles[i]:(i%2?11:-14),velocity:0};
+  });
+  const ringById=Object.fromEntries(rings.map(r=>[r.id,r]));
+  const rotorScene=create("g",{class:"tianhuan-rotor-scene"});
+  svg.insertBefore(rotorScene,svg.children[1]||null);
+  rings.forEach(r=>rotorScene.append(r.group));
+  for(const shape of Array.from(svg.children)){
+    if(shape===rotorScene||shape.tagName.toLowerCase()==="defs")continue;
+    let target=null;
+    if(shape.tagName.toLowerCase()==="g"&&shape.getAttribute("class")==="tianhuan-graduations"){
+      target=ringById.outer;
+    }else if(shape.tagName.toLowerCase()==="circle"&&shape.getAttribute("cx")==="360"&&shape.getAttribute("cy")==="360"){
+      const radius=Number(shape.getAttribute("r"));
+      target=radius>=290?ringById.outer:
+        radius>=270?ringById.jade:
+        radius>=220?ringById.middle:
+        radius>=99?ringById.inner:null;
+    }else if(shape.tagName.toLowerCase()==="ellipse"){
+      const radius=Number(shape.getAttribute("rx"));
+      target=radius>=235?ringById.orbitA:ringById.orbitB;
+    }
+    if(target)target.group.append(shape);
+  }
+
+  // Sparse engravings give each circular ring a visible direction of motion.
+  [[ringById.outer,18,313],[ringById.jade,12,282],
+   [ringById.middle,12,249],[ringById.inner,8,158]].forEach(([r,count,rad])=>{
+    const glints=create("g",{class:"tianhuan-engraving"});
+    for(let n=0;n<count;n++){
+      const a=(n+.25)*Math.PI*2/count;
+      const rr=rad;
+      glints.append(create("circle",{
+        cx:(360+Math.sin(a)*rr).toFixed(2),
+        cy:(360-Math.cos(a)*rr).toFixed(2),
+        r:n%3===0?2.9:1.45,
+        fill:n%3===0?"#f2da9e":"#9ed1b2",
+        opacity:n%3===0?.94:.68
+      }));
+    }
+    r.group.append(glints);
+  });
+  rings.forEach(r=>{
+    // Transparent hit area is the last item in each rotor so it is easy to grab.
+    const hit=r.id.startsWith("orbit")?
+      create("ellipse",{
+        cx:360,cy:360,
+        rx:r.radius,ry:r.id==="orbitA"?92:70,
+        transform:"rotate("+(r.id==="orbitA"?-29:45)+" 360 360)",
+        fill:"none",stroke:"transparent","stroke-width":r.id==="orbitA"?32:27
+      }):
+      create("circle",{cx:360,cy:360,r:r.radius,fill:"none",
+        stroke:"transparent","stroke-width":r.id==="inner"?28:23});
+    hit.setAttribute("class","tianhuan-ring-hit");
+    hit.setAttribute("role","slider");
+    hit.setAttribute("aria-label",r.name+"，拖动或者用方向键旋转");
+    hit.setAttribute("aria-valuemin","0");
+    hit.setAttribute("aria-valuemax","359");
+    hit.setAttribute("aria-valuenow",String(Math.round((r.angle+360)%360)));
+    hit.setAttribute("tabindex","0");
+    hit.dataset.ring=r.id;
+    r.hit=hit;
+    r.group.append(hit);
+  });
+  const paintRings=()=>{
+    for(const r of rings){
+      const a=(r.angle%360+360)%360;
+      r.group.setAttribute("transform","rotate("+a.toFixed(3)+" 360 360)");
+      r.hit.setAttribute("aria-valuenow",String(Math.round(a)%360));
+    }
+  };
+  paintRings();
+  const saveRings=()=>{
+    try{localStorage.setItem("yanya.xuanjing.tianhuan.rings.v1",JSON.stringify(rings.map(r=>Math.round(r.angle*100)/100)))}catch(_){}
+  };
+  let activeRing=null,drag=null,lastFrame=0,raf=0,visible=true,frameAt=0;
+  const minmax=(x,l,h)=>Math.max(l,Math.min(h,x));
+  const angleAt=e=>{
+    const rect=svg.getBoundingClientRect();
+    return Math.atan2(e.clientY-(rect.top+rect.height/2),
+      e.clientX-(rect.left+rect.width/2))*180/Math.PI;
+  };
+  const deltaAngle=(a,b)=>((a-b+540)%360)-180;
+  const onRingDown=e=>{
+    const hit=e.target.closest(".tianhuan-ring-hit");
+    if(!hit||e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
+    const ring=ringById[hit.dataset.ring];
+    if(!ring)return;
+    e.stopPropagation();e.preventDefault();
+    activeRing=ring;
+    drag={pointer:e.pointerId,prev:angleAt(e),time:performance.now(),moved:false};
+    ring.velocity=0;
+    stage.classList.add("tianhuan-dragging");
+    try{hit.setPointerCapture(e.pointerId)}catch(_){}
+  };
+  const onRingMove=e=>{
+    if(!drag||e.pointerId!==drag.pointer||!activeRing)return;
+    e.stopPropagation();e.preventDefault();
+    const next=angleAt(e),delta=deltaAngle(next,drag.prev);
+    const now=performance.now(),ms=minmax(now-drag.time,10,100);
+    if(Math.abs(delta)>.001){
+      activeRing.angle=(activeRing.angle+delta+360)%360;
+      activeRing.velocity=minmax(activeRing.velocity*.58+(delta/ms*1000)*.42,-130,130);
+      drag.moved=true;
+      paintRings();
+    }
+    drag.prev=next;drag.time=now;
+  };
+  const finishRing=e=>{
+    if(!drag||e.pointerId!==drag.pointer)return;
+    e.stopPropagation();
+    const hit=e.target.closest(".tianhuan-ring-hit");
+    if(hit?.hasPointerCapture?.(e.pointerId)){
+      try{hit.releasePointerCapture(e.pointerId)}catch(_){}
+    }
+    activeRing=null;drag=null;
+    stage.classList.remove("tianhuan-dragging");
+    saveRings();
+  };
+  svg.addEventListener("pointerdown",onRingDown);
+  svg.addEventListener("pointermove",onRingMove,{passive:false});
+  svg.addEventListener("pointerup",finishRing);
+  svg.addEventListener("pointercancel",finishRing);
+  svg.addEventListener("lostpointercapture",finishRing);
+  svg.addEventListener("click",e=>{
+    if(e.target.closest(".tianhuan-ring-hit")){
+      e.preventDefault();e.stopPropagation();
+    }
+  },true);
+  svg.addEventListener("keydown",e=>{
+    const hit=e.target.closest(".tianhuan-ring-hit");
+    if(!hit||!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key))return;
+    e.preventDefault();e.stopPropagation();
+    const r=ringById[hit.dataset.ring];
+    if(!r)return;
+    r.angle+=["ArrowLeft","ArrowDown"].includes(e.key)?-6:6;
+    r.velocity=0;paintRings();saveRings();
+  });
+
+  // Gentle independent ring motion, never 60fps layered filter animation.
+  // Pauses off-screen, on hidden tabs and for reduced-motion preferences.
+  const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  const saveData=navigator.connection?.saveData;
+  const mobile=window.matchMedia?.("(pointer: coarse)");
+  const spin=time=>{
+    raf=0;
+    if(document.hidden||!visible||document.body.dataset.homeView!=="cosmos")return;
+    const fps=mobile?.matches?12:24;
+    if(time-frameAt>=1000/fps){
+      const dt=lastFrame?minmax((time-lastFrame)/1000,0,.12):0;
+      lastFrame=time;frameAt=time;
+      for(const r of rings){
+        if(r===activeRing)continue;
+        if(Math.abs(r.velocity)>.12){
+          r.angle+=r.velocity*dt;
+          r.velocity*=Math.exp(-dt*2.65);
+        }else{
+          r.velocity=0;
+          if(!reduced?.matches&&!saveData)r.angle+=r.speed*dt;
+        }
+      }
+      paintRings();
+    }
+    raf=requestAnimationFrame(spin);
+  };
+  const startSpin=()=>{
+    if(!raf && !document.hidden && visible){
+      lastFrame=0;frameAt=0;
+      raf=requestAnimationFrame(spin);
+    }
+  };
+  const stopSpin=()=>{if(raf)cancelAnimationFrame(raf);raf=0;lastFrame=0};
+  const visibility=new IntersectionObserver(entries=>{
+    visible=entries[0]?.isIntersecting!==false;
+    if(visible)startSpin();else stopSpin();
+  },{threshold:0});
+  visibility.observe(stage);
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){stopSpin();saveRings()}
+    else startSpin();
+  });
+  window.addEventListener("pagehide",saveRings);
+  startSpin();
+
+
+
   // A quiet, credible date banner: no fake divination or fabricated lunar date.
   const nav=section.querySelector(".ritual-navigation");
   const daily=document.createElement("div");
