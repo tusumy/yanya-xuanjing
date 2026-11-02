@@ -198,6 +198,123 @@
   const saveRings=()=>{
     try{localStorage.setItem("yanya.xuanjing.tianhuan.rings.v1",JSON.stringify(rings.map(r=>Math.round(r.angle*100)/100)))}catch(_){}
   };
+
+  // The eight pre-heaven trigram badges form their OWN seventh orbit.
+  // The mappings and pre-heaven places below intentionally match GUA in
+  // ritual-v3.js; keep the characters upright as the orbit moves.
+  // Clockwise polar angles: north Kun, NE Zhen, east Li, SE Dui,
+  // south Qian, SW Xun, west Kan, NW Gen.
+  const bagua=[
+    {name:"乾",symbol:"☰",nature:"天",base:180},
+    {name:"兑",symbol:"☱",nature:"泽",base:135},
+    {name:"离",symbol:"☲",nature:"火",base:90},
+    {name:"震",symbol:"☳",nature:"雷",base:45},
+    {name:"巽",symbol:"☴",nature:"风",base:225},
+    {name:"坎",symbol:"☵",nature:"水",base:270},
+    {name:"艮",symbol:"☶",nature:"山",base:315},
+    {name:"坤",symbol:"☷",nature:"地",base:0}
+  ];
+  const baguaKey="yanya.xuanjing.tianhuan.bagua.v1";
+  let baguaAngle=0,baguaVelocity=0,baguaPointer=null;
+  try{
+    const persisted=JSON.parse(localStorage.getItem(baguaKey));
+    if(Number.isFinite(persisted))baguaAngle=persisted;
+  }catch(_){}
+  const persistBagua=()=>{
+    try{localStorage.setItem(baguaKey,JSON.stringify(Math.round(((baguaAngle%360)+360)%360*100)/100))}catch(_){}
+  };
+  const isBagua=()=>["8","64"].includes(stage.dataset.power) &&
+    nodes.querySelectorAll(".ritual-glyph").length===8;
+  const paintBagua=()=>{
+    if(!isBagua())return;
+    const badges=nodes.querySelectorAll(".ritual-glyph");
+    const rad=Math.PI/180;
+    badges.forEach((b,i)=>{
+      const angle=(bagua[i].base+baguaAngle)*rad;
+      b.style.left=(50+40*Math.sin(angle))+"%";
+      b.style.top=(50-40*Math.cos(angle))+"%";
+    });
+  };
+  const hydrateBagua=()=>{
+    if(!isBagua())return;
+    nodes.querySelectorAll(".ritual-glyph").forEach((b,i)=>{
+      const item=bagua[i];
+      b.classList.add("tianhuan-bagua-node");
+      b.dataset.baguaIndex=String(i);
+      b.setAttribute("aria-label",item.name+"卦 · "+item.nature+"。轻触选卦，拖动旋转八卦外环");
+      b.setAttribute("title",item.name+" · "+item.nature);
+      // This keeps the actual glyph and readable Hanzi together.
+      const han=document.createElement("span");
+      han.className="tianhuan-bagua-hanzi";han.textContent=item.name;
+      const sign=document.createElement("span");
+      sign.className="tianhuan-bagua-sign";sign.textContent=item.symbol;
+      b.replaceChildren(han,sign);
+    });
+    paintBagua();
+  };
+  const baguaObserver=new MutationObserver(hydrateBagua);
+  baguaObserver.observe(nodes,{childList:true});
+  hydrateBagua();
+  const baguaPointAngle=event=>{
+    const r=nodes.getBoundingClientRect();
+    return Math.atan2(event.clientY-(r.top+r.height/2),
+      event.clientX-(r.left+r.width/2))*180/Math.PI;
+  };
+  const baguaDelta=(a,b)=>((a-b+540)%360)-180;
+  let swallowBaguaClick=false;
+  nodes.addEventListener("pointerdown",event=>{
+    const badge=event.target.closest(".tianhuan-bagua-node");
+    if(!badge||event.isPrimary===false||(event.pointerType==="mouse"&&event.button!==0))return;
+    const a=baguaPointAngle(event);
+    baguaPointer={id:event.pointerId,target:badge,
+      x:event.clientX,y:event.clientY,last:a,time:performance.now(),
+      moved:false};
+    baguaVelocity=0;
+  });
+  nodes.addEventListener("pointermove",event=>{
+    const p=baguaPointer;
+    if(!p||event.pointerId!==p.id)return;
+    if(!p.moved){
+      if(Math.hypot(event.clientX-p.x,event.clientY-p.y)<7)return;
+      p.moved=true;
+      stage.classList.add("tianhuan-bagua-dragging");
+      try{p.target.setPointerCapture(event.pointerId)}catch(_){}
+    }
+    const now=performance.now(),angle=baguaPointAngle(event);
+    const delta=baguaDelta(angle,p.last),dt=Math.max(10,Math.min(now-p.time,100));
+    baguaAngle=(baguaAngle+delta+360)%360;
+    baguaVelocity=Math.max(-135,Math.min(135,baguaVelocity*.64+(delta/dt*1000)*.36));
+    p.last=angle;p.time=now;
+    paintBagua();
+    if(event.cancelable)event.preventDefault();
+  },{passive:false});
+  const endBagua=(event,cancelled=false)=>{
+    const p=baguaPointer;
+    if(!p||event.pointerId!==p.id)return;
+    if(p.moved){
+      swallowBaguaClick=true;
+      if(cancelled)baguaVelocity=0;
+      persistBagua();
+    }
+    baguaPointer=null;
+    stage.classList.remove("tianhuan-bagua-dragging");
+    if(p.target.hasPointerCapture?.(event.pointerId)){
+      try{p.target.releasePointerCapture(event.pointerId)}catch(_){}
+    }
+  };
+  nodes.addEventListener("pointerup",event=>endBagua(event));
+  nodes.addEventListener("pointercancel",event=>endBagua(event,true));
+  nodes.addEventListener("lostpointercapture",event=>endBagua(event,true));
+  nodes.addEventListener("click",event=>{
+    if(!swallowBaguaClick)return;
+    swallowBaguaClick=false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  },true);
+  // Trigram clicks keep triggering the original selected-gua detail.
+  // Dragging a badge moves all eight around the shared jade ring.
+
+
   let activeRing=null,drag=null,lastFrame=0,raf=0,visible=true,frameAt=0;
   const minmax=(x,l,h)=>Math.max(l,Math.min(h,x));
   const angleAt=e=>{
@@ -284,6 +401,16 @@
           if(!reduced?.matches&&!saveData)r.angle+=r.speed*dt;
         }
       }
+      if(!baguaPointer && isBagua()){
+        if(Math.abs(baguaVelocity)>.14){
+          baguaAngle=(baguaAngle+baguaVelocity*dt+360)%360;
+          baguaVelocity*=Math.exp(-dt*2.8);
+        }else{
+          baguaVelocity=0;
+          if(!reduced?.matches&&!saveData)baguaAngle=(baguaAngle+1.35*dt)%360;
+        }
+        paintBagua();
+      }
       paintRings();
     }
     raf=requestAnimationFrame(spin);
@@ -301,10 +428,10 @@
   },{threshold:0});
   visibility.observe(stage);
   document.addEventListener("visibilitychange",()=>{
-    if(document.hidden){stopSpin();saveRings()}
+    if(document.hidden){stopSpin();saveRings();persistBagua()}
     else startSpin();
   });
-  window.addEventListener("pagehide",saveRings);
+  window.addEventListener("pagehide",()=>{saveRings();persistBagua()});
   startSpin();
 
 
