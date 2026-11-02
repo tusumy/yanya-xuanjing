@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 940" preserveAspectRatio="xMidYMid slice" role="img" aria-label="玄境山水、月与远山楼阁">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0.1" y2="1"><stop stop-color="#061c21"/><stop offset=".46" stop-color="#123a40"/><stop offset="1" stop-color="#23474b"/></linearGradient>
+<radialGradient id="moonshine"><stop stop-color="#f6e5b6" stop-opacity=".33"/><stop offset=".25" stop-color="#c6d8c5" stop-opacity=".12"/><stop offset="1" stop-color="#c2e0c9" stop-opacity="0"/></radialGradient>
+<linearGradient id="mountain" x1="0" y1="0" x2=".4" y2="1"><stop stop-color="#385f61"/><stop offset=".7" stop-color="#183d41"/><stop offset="1" stop-color="#07282e"/></linearGradient>
+<linearGradient id="near" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#234d49"/><stop offset="1" stop-color="#041f24"/></linearGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#20464a" stop-opacity=".34"/><stop offset=".32" stop-color="#092a32" stop-opacity=".63"/><stop offset="1" stop-color="#061c26"/></linearGradient>
+<linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b5c7b3" stop-opacity=".03"/><stop offset=".5" stop-color="#bed2c0" stop-opacity=".27"/><stop offset="1" stop-color="#b5cabb" stop-opacity="0"/></linearGradient>
+</defs>
+<rect width="1400" height="940" fill="url(#sky)"/>
+<ellipse cx="1145" cy="150" rx="176" ry="175" fill="url(#moonshine)"/>
+<circle cx="1145" cy="150" r="32" fill="#f2e7cb" opacity=".88"/><circle cx="1160" cy="140" r="32" fill="#09242a"/>
+<g fill="#deeacf" opacity=".6"><circle cx="105" cy="94" r="1.6"/><circle cx="349" cy="67" r="1.3"/><circle cx="560" cy="138" r="1"/><circle cx="858" cy="83" r="1.5"/><circle cx="1242" cy="60" r="1.1"/><circle cx="1353" cy="260" r="1.2"/><circle cx="78" cy="310" r="1"/><circle cx="714" cy="43" r="1"/></g>
+<path d="M0 475L92 400 180 448 270 356 345 392 433 282 499 353 610 234 716 380 813 320 896 372 1000 247 1080 311 1190 255 1286 349 1400 290V710H0Z" fill="#42686a" opacity=".22"/>
+<path d="M0 558L83 483 175 523 289 373 365 458 447 390 541 487 650 319 730 448 850 390 947 509 1038 381 1169 473 1270 355 1400 469V771H0Z" fill="url(#mountain)" opacity=".74"/>
+<path d="M0 616L133 528 221 577 322 446 403 518 481 470 587 595 684 480 789 602 900 506 1025 602 1130 474 1232 548 1316 468 1400 555V855H0Z" fill="url(#near)" opacity=".86"/>
+<path d="M0 600Q210 574 361 624T695 616T1010 615T1400 602V840H0Z" fill="url(#mist)" opacity=".47"/>
+<g transform="translate(1127 344)" opacity=".87">
+ <path d="M-100 153L-70 65 0-3 73 69 111 153Z" fill="#16393a"/>
+ <path d="M-59 114V12H59V114Z" fill="#203f3f" stroke="#789288" stroke-width="2"/>
+ <path d="M-73 24Q-43 12-20-5L0-32 20-5Q43 12 74 24L57 30Q21 21 0 7-23 21-56 30Z" fill="#081e29" stroke="#a3b09a" stroke-width="3"/>
+ <path d="M-58 64Q-25 51 0 37Q23 51 58 64L75 72-75 72Z" fill="#102c30" stroke="#c2baa0" stroke-width="3"/>
+ <path d="M-47 76H47V112H-47Z" fill="#183638"/>
+ <g stroke="#9cb1a1" stroke-width="2"><path d="M-28 76V112M0 76V112M28 76V112"/></g>
+ <g fill="#edc891" opacity=".88"><rect x="-14" y="80" width="9" height="21"/><rect x="7" y="80" width="9" height="21"/><rect x="-15" y="30" width="11" height="18"/><rect x="6" y="30" width="11" height="18"/></g>
+ <path d="M0-31V-48" stroke="#d0c79d" stroke-width="2"/>
+</g>
+<path d="M0 654Q250 628 460 666Q720 627 998 661Q1200 622 1400 643V940H0Z" fill="url(#water)"/>
+<g fill="none" stroke="#e3d5ab" stroke-width="1.7" opacity=".21">
+ <path d="M293 709Q700 690 1115 710"/><path d="M84 745Q755 726 1369 755"/><path d="M197 789Q692 779 1090 790"/><path d="M375 830Q751 813 1091 828"/><path d="M90 886Q700 854 1360 887"/>
+</g>
+<g opacity=".57" fill="#091f25">
+ <path d="M0 940V587L58 591 87 547 126 607 163 585 221 663 240 684V940Z"/>
+ <path d="M1400 940V575L1334 590 1300 559 1266 636 1190 651 1150 700V940Z"/>
+</g>
+<g stroke="#b6c7aa" stroke-opacity=".18" fill="none" stroke-width="2">
+ <path d="M-22 18Q100 82 196 12M1354-20Q1280 45 1223 50"/>
+ <path d="M61 40L44 17M83 50L89 9M107 43L130 26M132 33L157 8M1270 24L1288 6M1292 19L1320 9"/>
+</g>
+</svg>
