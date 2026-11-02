@@ -148,6 +148,7 @@
   paintDial();
 
   stage.addEventListener("pointerdown",event=>{
+    if(root.classList.contains("tianhuan-active"))return;
     if(sphereActive)return;
     if(event.isPrimary===false)return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
@@ -160,6 +161,7 @@
   });
 
   stage.addEventListener("pointermove",event=>{
+    if(root.classList.contains("tianhuan-active"))return;
     if(sphereActive)return;
     if(dial.pointerId!==event.pointerId)return;
     if(!dial.dragging){
@@ -209,7 +211,7 @@
   let flatAnimationFrame=0;
   const animateDial=(timestamp)=>{
     flatAnimationFrame=0;
-    if(sphereActive){dial.lastFrame=0;return;}
+    if(sphereActive || root.classList.contains("tianhuan-active")){dial.lastFrame=0;return;}
     const elapsed=dial.lastFrame?clamp(timestamp-dial.lastFrame,0,55):0;
     dial.lastFrame=timestamp;
     if(!sphereActive && dial.pointerId===null && state.view==="cosmos" && !document.hidden && !noAutoMotion()){
