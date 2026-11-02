@@ -1,0 +1,493 @@
+/* 砚芽玄境 · SEED 13 | 天环主题
+ * Based on the selected second concept: bronze & jade celestial rings,
+ * moonlit mountain lake, restrained engravings, useful responsive cards.
+ * Static lightweight vector scenery, no remote image hosting or WebGL.
+ */
+body[data-home-view="cosmos"]:has(.tianhuan-layout){
+  --th-gold:#dbc298;
+  --th-gold-soft:rgba(215,190,144,.58);
+  --th-jade:#9bc7aa;
+  --th-text:#f2e8d1;
+  --th-glass:rgba(5,27,30,.80);
+  --th-line:rgba(220,194,138,.30);
+  background:linear-gradient(180deg,#061a20,#0a272d 75%,#071e24);
+  color-scheme:dark;
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .shell{overflow:visible}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .topbar{
+  position:relative;z-index:2;
+  border-bottom-color:rgba(214,183,123,.21);
+  background:linear-gradient(90deg,rgba(4,24,27,.40),rgba(23,55,54,.13));
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .brand-emblem{
+  color:#e7ce97;
+  background:linear-gradient(160deg,#355b50,#102f35);
+  border:1px solid rgba(221,190,133,.44);
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .brand-copy strong{
+  color:#f0e0c1;
+  font-family:"Noto Serif SC","Songti SC",serif;
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .brand-copy small{color:#b5a88b}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .edition{color:#af9f80}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .icon-button{
+  border-color:rgba(209,187,137,.35);color:#eed3a1;
+  background:rgba(7,38,42,.50);
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .dock{
+  color:#ebd8b3;border-color:rgba(220,196,142,.44);
+  background:rgba(5,24,29,.95);
+  box-shadow:0 16px 35px rgba(1,17,19,.24),inset 0 1px rgba(235,213,167,.12);
+}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .dock button{color:#c7bda5}
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .dock button:hover,
+body[data-home-view="cosmos"]:has(.tianhuan-layout) .dock button:focus-visible{
+  color:#f5e2bb;background:rgba(204,178,121,.11);
+}
+.tianhuan-layout{
+  position:relative;isolation:isolate;
+  width:min(100%,1120px);
+  border-radius:0 0 25px 25px;
+  padding:0 clamp(10px,2.3vw,28px) 30px;
+  color:#f1e4cc;
+}
+.tianhuan-layout::before{
+  content:"";position:absolute;z-index:-2;
+  inset:-60px 0 0;left:0;top:-60px;
+  width:100%;height:calc(100% + 60px);
+  transform:none;
+  border-radius:0 0 24px 24px;
+  background:
+    linear-gradient(180deg,rgba(3,20,25,.26) 0%,rgba(3,27,30,.02) 37%,rgba(3,23,28,.34) 78%,rgba(3,19,25,.81) 100%),
+    url("tianhuan-landscape.svg") center top / cover no-repeat;
+  pointer-events:none;
+  box-shadow:inset 0 -45px 65px rgba(1,13,18,.35);
+}
+.tianhuan-layout::after{
+  content:"";z-index:-1;position:absolute;pointer-events:none;
+  left:50%;top:140px;transform:translateX(-50%);
+  width:min(90%,720px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(142,213,171,.14),transparent 66%);
+}
+.tianhuan-layout .ritual-top{
+  padding:20px clamp(5px,2vw,22px) 0;
+  align-items:center;
+}
+.tianhuan-layout .ritual-eyebrow{
+  color:#cebd98;font-size:10px;
+  letter-spacing:clamp(1px,.32vw,3px);
+}
+.tianhuan-layout .ritual-top-mark{color:rgba(221,185,119,.78)}
+.tianhuan-layout .ritual-depth-toggle{display:none!important}
+.tianhuan-layout .ritual-heading{
+  margin-top:12px;
+  gap:7px;
+}
+.tianhuan-layout .ritual-title{
+  color:#f2e4c5;
+  font-size:clamp(28px,3.6vw,43px);
+  font-family:"Noto Serif SC","Songti SC",serif;
+  letter-spacing:clamp(2px,.55vw,6px);
+  text-shadow:0 3px 25px rgba(0,10,14,.45);
+}
+.tianhuan-layout .ritual-subtitle{
+  color:#d5c5a3;font-size:11px;letter-spacing:3px;
+  text-shadow:0 2px 12px rgba(0,15,15,.55);
+}
+.tianhuan-layout .ritual-stage{
+  width:min(100%,655px);
+  max-width:100%;
+  margin:0 auto -6px;
+  left:auto;
+  transform:none;
+  isolation:isolate;
+}
+.tianhuan-layout .ritual-stage::before{
+  inset:7%;z-index:-2;
+  background:radial-gradient(circle,rgba(32,103,92,.20),rgba(8,43,45,.07) 46%,transparent 69%);
+  box-shadow:none;
+}
+.tianhuan-layout .ritual-stage::after{
+  border:none;
+  box-shadow:none;
+  opacity:0;
+}
+.tianhuan-layout .ritual-aurora,
+.tianhuan-layout .ritual-3d-base,
+.tianhuan-layout .ritual-compass,
+.tianhuan-layout .ritual-north,
+.tianhuan-layout .ritual-south{display:none!important}
+.tianhuan-layout .ritual-stardust{opacity:.45}
+.tianhuan-layout .ritual-geometry{
+  z-index:0;
+  opacity:.25;
+  will-change:auto;
+}
+.tianhuan-layout .ritual-geometry .ritual-ring,
+.tianhuan-layout .ritual-geometry .ritual-ring-outer{
+  stroke:rgba(209,182,132,.45);
+}
+.tianhuan-instrument{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  overflow:visible;
+  z-index:1;
+  pointer-events:none;
+  transform-origin:center;
+  transform:rotate(var(--ritual-rotation,0deg));
+  will-change:auto;
+}
+.tianhuan-layout .ritual-nodes{z-index:5}
+.tianhuan-layout .ritual-glyph{
+  width:clamp(37px,5vw,57px);
+  height:clamp(37px,5vw,57px);
+  color:#eee4c8;
+  border:2px solid rgba(225,195,136,.83);
+  outline:1px solid rgba(10,34,34,.8);
+  outline-offset:-6px;
+  font-size:clamp(21px,2.9vw,31px);
+  font-family:"Segoe UI Symbol","Noto Sans Symbols 2",serif;
+  background:radial-gradient(circle at 35% 21%,#35645a,#14393f 66%,#092b32);
+  box-shadow:0 4px 8px rgba(0,10,17,.32),inset 0 1px rgba(232,218,182,.24);
+  transition:color .15s,background .15s,border-color .15s;
+}
+.tianhuan-layout .ritual-glyph:hover,
+.tianhuan-layout .ritual-glyph:focus-visible,
+.tianhuan-layout .ritual-glyph.is-active{
+  color:#ffebba;
+  border-color:#f7d997;
+  background:radial-gradient(circle at 37% 21%,#508374,#20524d 73%,#123c40);
+  box-shadow:0 0 13px rgba(228,191,112,.35),inset 0 1px rgba(255,236,174,.29);
+  transform:translate(-50%,-50%) scale(1.055);
+}
+.tianhuan-layout .ritual-ember{
+  background:#b9a67d;
+  border-color:#ead6a2;
+}
+.tianhuan-layout .ritual-heart,
+.tianhuan-layout .ritual-stage:not(.ritual-sphere-mode) .ritual-heart{
+  width:clamp(89px,19%,119px);
+  left:50%;top:50%;z-index:4;
+  transform:translate(-50%,-50%)!important;
+}
+.tianhuan-layout .ritual-heart-halo{
+  inset:-29%;
+  background:radial-gradient(circle,rgba(179,242,192,.08),transparent 70%);
+  border:none;box-shadow:none;
+}
+.tianhuan-layout .ritual-heart-halo::before{
+  inset:14%;border-color:rgba(214,181,120,.46);
+}
+.tianhuan-layout .ritual-core,
+.tianhuan-layout .ritual-stage:not(.ritual-sphere-mode) .ritual-core{
+  position:relative;
+  background:
+    radial-gradient(circle at 33% 20%,rgba(232,252,218,.3),transparent 36%),
+    radial-gradient(circle at 50% 50%,#397b70,#1a484a 67%,#102f36);
+  border:2px solid #ceb788;
+  width:90%;
+  color:#e3d9ab;
+  box-shadow:0 6px 0 -2px #0d3239,0 10px 21px rgba(0,18,22,.37),
+    inset 0 2px 8px rgba(212,248,209,.17);
+  transition:background .16s,border-color .16s;
+}
+.tianhuan-layout .ritual-core:hover{
+  background:radial-gradient(circle,#4b9882,#1b5152 77%);
+  box-shadow:0 8px 0 -2px #0d3239,0 12px 25px rgba(0,18,22,.3);
+  transform:none;
+}
+.tianhuan-core-emblem{
+  width:62%;height:62%;
+  color:#e1d7af;
+  display:block;
+  pointer-events:none;
+}
+.tianhuan-core-caption{
+  position:absolute;bottom:8%;
+  font-family:"Songti SC",serif;
+  font-size:9px;
+  letter-spacing:1.8px;
+  color:#e7d1a1;
+  pointer-events:none;
+}
+.tianhuan-layout .ritual-navigation{
+  margin:12px auto 0;
+  gap:clamp(12px,2.3vw,20px);
+}
+.tianhuan-layout .ritual-progress{gap:clamp(10px,1.1vw,14px)}
+.tianhuan-layout .ritual-dot{background:rgba(198,179,130,.5)}
+.tianhuan-layout .ritual-dot.is-active{
+  background:#f4d69d;
+  box-shadow:0 0 10px rgba(222,181,102,.48);
+}
+.tianhuan-layout .ritual-nav-arrow{
+  color:#efddb2;
+  border-color:rgba(219,188,125,.46);
+  background:rgba(9,48,48,.7);
+}
+.tianhuan-layout .ritual-stage-caption{
+  color:#dac9a8;letter-spacing:1.6px;
+  margin-top:12px;font-size:10px;
+}
+.tianhuan-daily{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:min(92%,625px);
+  margin:0 auto 3px;
+  padding:13px 18px;
+  border-radius:11px;
+  border:1px solid rgba(222,191,128,.53);
+  background:rgba(5,31,36,.8);
+  color:#ecd5aa;
+  box-shadow:inset 0 1px rgba(255,247,207,.1),0 6px 19px rgba(2,20,20,.19);
+}
+.tianhuan-day-label{font-size:12px;letter-spacing:.5px;white-space:nowrap}
+.tianhuan-day-note{font-size:11px;letter-spacing:.9px;color:#cec19f;text-align:right}
+.tianhuan-layout .ritual-detail{
+  background:linear-gradient(145deg,rgba(12,43,45,.87),rgba(4,29,33,.89));
+  border:1px solid rgba(215,185,125,.46);
+  box-shadow:0 8px 25px rgba(0,18,24,.18);
+  max-width:100%;
+  margin-top:16px;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.tianhuan-layout .ritual-detail-kicker{color:#c5b38d}
+.tianhuan-layout .ritual-detail-title{color:#f2dfb4}
+.tianhuan-layout .ritual-description p{color:#c4cdb8}
+.tianhuan-layout .ritual-entry{
+  color:#2b3429;
+  border-color:#e5c88d;
+  background:linear-gradient(135deg,#f5ddb0,#c6ab76);
+  font-weight:600;
+}
+.tianhuan-layout .ritual-select{
+  background:#143e3f;color:#f3e4c5;border-color:rgba(212,188,136,.6);
+}
+.tianhuan-layout .ritual-select-label{color:#c7b89a}
+.tianhuan-layout .ritual-bottom{
+  max-width:100%;
+  color:#baa98b;
+  border-top-color:rgba(208,181,125,.2);
+  font-size:9px;
+}
+.tianhuan-features{
+  width:min(100%,890px);
+  margin:24px auto 0;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:11px;
+}
+.tianhuan-card{
+  min-width:0;
+  min-height:154px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+  padding:8px 8px 11px;
+  border-radius:13px;
+  border:1px solid rgba(211,187,137,.48);
+  background:linear-gradient(162deg,rgba(16,48,50,.92),rgba(4,29,32,.97));
+  color:#ebdcc0;
+  text-align:center;
+  font-family:inherit;
+  cursor:pointer;
+  transition:border-color .2s,transform .2s;
+}
+.tianhuan-card:hover,.tianhuan-card:focus-visible{
+  border-color:#edce8d;transform:translateY(-2px);
+}
+.tianhuan-card-art{
+  flex:1;
+  display:grid;
+  place-items:center;
+  min-height:90px;
+  border-radius:8px;
+  font-family:"Songti SC","Noto Serif SC",serif;
+  font-size:35px;
+  color:#f0d69e;
+  text-shadow:0 2px 15px rgba(228,195,132,.23);
+  background:
+    radial-gradient(ellipse at 51% 68%,rgba(128,194,159,.15),transparent 60%),
+    linear-gradient(180deg,rgba(19,62,65,.32),rgba(7,26,37,.68)),
+    url("tianhuan-landscape.svg") center 42% / auto 170% no-repeat;
+}
+.tianhuan-card-stars .tianhuan-card-art{background-position:center,center,30% 42%}
+.tianhuan-card-oracle .tianhuan-card-art{
+  background:
+    radial-gradient(ellipse at 52% 65%,rgba(215,186,127,.18),transparent 66%),
+    linear-gradient(155deg,#284944,#091e27);
+}
+.tianhuan-card-workshop .tianhuan-card-art{
+  background:
+    repeating-radial-gradient(circle at center,transparent 0 9px,rgba(225,187,119,.06) 10px 11px),
+    linear-gradient(145deg,#285a55,#091e26);
+}
+.tianhuan-card-library .tianhuan-card-art{
+  background:linear-gradient(160deg,rgba(221,184,111,.13),rgba(11,37,38,.85)),
+    repeating-linear-gradient(90deg,#0b3134 0 19px,#173b3b 20px 22px,#061f27 23px 32px);
+}
+.tianhuan-card-copy{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tianhuan-card-copy strong{
+  color:#f1dfb9;font-size:13px;font-family:"Noto Serif SC","Songti SC",serif;
+  font-weight:500;letter-spacing:1px;
+}
+.tianhuan-card-copy small{
+  color:#c1b69d;font-size:10px;line-height:1.6;
+}
+body[data-home-view="cosmos"][data-period="day"]:has(.tianhuan-layout){
+  --th-text:#2c5145;
+  color-scheme:light;
+  background:linear-gradient(180deg,#edf9e8,#d5e6dc 77%,#c9dbd6);
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout::before{
+  background:
+    linear-gradient(180deg,rgba(239,250,234,.78),rgba(218,237,217,.61) 44%,rgba(191,216,203,.57) 80%,rgba(216,232,210,.86)),
+    url("tianhuan-landscape.svg") center top/cover no-repeat;
+  box-shadow:inset 0 -34px 55px rgba(200,232,204,.27);
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-title{color:#28533e;text-shadow:none}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-eyebrow,
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-subtitle{color:#51775c;text-shadow:none}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-glyph{
+  color:#2a604e;
+  border-color:#a48a59;
+  background:radial-gradient(circle at 33% 25%,#f5f6d9,#b6d6bb 76%,#77a78f);
+  box-shadow:0 4px 9px rgba(65,120,87,.14),inset 0 2px rgba(255,255,255,.75);
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-glyph.is-active{
+  background:radial-gradient(circle,#f8f2ce,#b7d2a7);
+  color:#27523b;
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-core{
+  background:radial-gradient(circle at 35% 24%,#edf9e8,#a6d3b3 58%,#6da790);
+  color:#396f51;
+  border-color:#a58e66;
+  box-shadow:0 5px 12px rgba(68,122,85,.16);
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-core-emblem{color:#41795c}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-core-caption{color:#4a8160}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-daily,
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-detail{
+  color:#315b45;
+  background:rgba(246,253,238,.91);
+  border-color:rgba(125,113,75,.42);
+  box-shadow:0 6px 23px rgba(74,127,79,.11);
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-day-note,
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-stage-caption{color:#4b7860}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-detail-title{color:#346a50}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-detail-kicker,
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-description p{color:#568067}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-entry{
+  color:#284f3d;background:linear-gradient(145deg,#f9f2d9,#c7e4b9);
+  border-color:#9aab7e;
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-card{
+  background:linear-gradient(160deg,#f4f6e8,#d7e8d7);
+  border-color:rgba(118,131,89,.45);color:#295640;
+}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-card-copy strong{color:#28543d}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-card-copy small{color:#547d66}
+body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .ritual-bottom{color:#60846d}
+/* Desktop: hero instrument on the left, live trigram detail on the right. */
+@media (min-width:1024px){
+ .tianhuan-layout{
+   max-width:1110px;
+   grid-template-columns:minmax(0,1.27fr) minmax(310px,.83fr);
+   grid-template-areas:
+     "top top"
+     "heading heading"
+     "stage detail"
+     "daily detail"
+     "navigation detail"
+     "caption detail"
+     "features features"
+     "bottom bottom";
+   grid-template-rows:auto auto auto auto auto auto auto auto;
+   column-gap:clamp(22px,3vw,46px);
+   align-items:center;
+ }
+ .tianhuan-layout .ritual-top{grid-area:top}
+ .tianhuan-layout .ritual-heading{grid-area:heading;margin-top:18px;margin-bottom:2px}
+ .tianhuan-layout .ritual-stage{grid-area:stage;width:100%;max-width:630px}
+ .tianhuan-layout .ritual-detail{grid-area:detail;padding:25px;gap:19px;margin:0;background:rgba(5,31,33,.9)}
+ .tianhuan-layout .ritual-navigation{grid-area:navigation;margin:7px auto 0}
+ .tianhuan-layout .ritual-stage-caption{grid-area:caption}
+ .tianhuan-layout .tianhuan-daily{grid-area:daily;width:100%;margin:0 auto}
+ .tianhuan-layout .tianhuan-features{grid-area:features;max-width:100%;margin-top:26px}
+ .tianhuan-layout .ritual-bottom{grid-area:bottom}
+}
+@media (min-width:681px) and (max-width:1023px){
+ .tianhuan-layout .ritual-stage{width:min(100%,620px)}
+ .tianhuan-layout .tianhuan-features{max-width:720px}
+}
+/* Phone: fit everything into the padded width, single-column UI, no black-tile-prone filters. */
+@media(max-width:680px){
+ .tianhuan-layout{
+   padding:0 2px 20px;
+   width:100%;max-width:100%;
+   border-radius:0 0 15px 15px;
+ }
+ .tianhuan-layout::before{
+   top:-15px;inset:-15px 0 0;
+   height:calc(100% + 15px);
+   background-size:auto,auto 68%;
+   background-position:center,center top;
+   background-repeat:no-repeat;
+   border-radius:0 0 14px 14px;
+ }
+ .tianhuan-layout .ritual-top{padding:14px 8px 0}
+ .tianhuan-layout .ritual-eyebrow{font-size:8px;letter-spacing:1px}
+ .tianhuan-layout .ritual-heading{margin-top:11px;gap:5px}
+ .tianhuan-layout .ritual-title{font-size:clamp(23px,6.8vw,31px);letter-spacing:1px}
+ .tianhuan-layout .ritual-subtitle{font-size:10px;letter-spacing:.5px}
+ .tianhuan-layout .ritual-stage{
+   width:min(100%,520px);
+   max-width:100%;margin:1px auto -4px;
+   transform:none;left:auto;
+ }
+ .tianhuan-layout .ritual-glyph{
+   width:clamp(31px,9vw,41px);
+   height:clamp(31px,9vw,41px);
+   font-size:clamp(19px,5.2vw,24px);
+   border-width:1.7px;
+   outline:none;
+ }
+ .tianhuan-layout .ritual-stage:not(.ritual-sphere-mode) .ritual-heart{width:clamp(69px,18%,91px)}
+ .tianhuan-layout .ritual-core{border-width:1.5px}
+ .tianhuan-core-caption{font-size:8px}
+ .tianhuan-layout .ritual-navigation{margin:10px auto 0}
+ .tianhuan-layout .ritual-detail{margin:13px auto 0}
+ .tianhuan-daily{
+   width:100%;max-width:100%;margin:3px auto 0;
+   padding:12px 10px;
+   gap:8px;
+ }
+ .tianhuan-day-label{font-size:10px;white-space:normal}
+ .tianhuan-day-note{font-size:10px;letter-spacing:0}
+ .tianhuan-features{
+   grid-template-columns:repeat(2,minmax(0,1fr));
+   gap:9px;margin-top:19px;
+ }
+ .tianhuan-card{padding:7px;min-height:140px}
+ .tianhuan-card-art{min-height:79px;font-size:30px}
+ .tianhuan-card-copy strong{font-size:13px}
+ .tianhuan-card-copy small{font-size:10px}
+ .tianhuan-layout .ritual-bottom{margin-top:19px;padding-top:15px}
+ .tianhuan-layout .ritual-stardust{display:none!important}
+ .tianhuan-instrument{will-change:auto!important}
+ .tianhuan-layout .ritual-heart-halo{box-shadow:none!important}
+}
+@media(max-width:359px){
+ .tianhuan-daily{flex-direction:column;align-items:flex-start;gap:3px}
+ .tianhuan-day-note{text-align:left}
+ .tianhuan-card-copy small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .tianhuan-instrument{transition:none!important}
+ .tianhuan-card{transition:none!important}
+}
