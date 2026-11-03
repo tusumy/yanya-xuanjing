@@ -742,3 +742,35 @@ body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .tianhuan-inst
     filter:none!important;
   }
 }
+
+
+/* SEED 17 · All stage markers orbit; no fixed decorative beads.
+   Increase small-node touch targets without enlarging the painted disk too far. */
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node{
+  touch-action:none!important;
+  -webkit-user-select:none;
+  user-select:none;
+  cursor:grab;
+}
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node:active,
+.tianhuan-layout .tianhuan-bagua-dragging .tianhuan-orbit-node{
+  cursor:grabbing;
+}
+.tianhuan-layout .ritual-nodes .ritual-ember.tianhuan-orbit-node{
+  width:clamp(15px,4.3vw,19px);
+  height:clamp(15px,4.3vw,19px);
+  border:2px solid rgba(240,213,155,.92);
+  background:radial-gradient(circle at 35% 28%,#f1e4ba,#8bbba0 55%,#255c58);
+  box-shadow:0 1px 7px rgba(1,25,24,.3);
+  transition:background .15s,border-color .15s;
+}
+.tianhuan-layout .ritual-nodes .ritual-ember.tianhuan-orbit-node.is-active{
+  background:radial-gradient(circle at 32% 25%,#fff0c8,#d3b570);
+  border-color:#f4ddb3;
+  box-shadow:0 0 12px rgba(241,208,149,.5);
+}
+@media(max-width:360px){
+  .tianhuan-layout .ritual-nodes .ritual-ember.tianhuan-orbit-node{
+    width:15px;height:15px;
+  }
+}
