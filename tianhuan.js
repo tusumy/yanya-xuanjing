@@ -135,11 +135,15 @@
     let target=null;
     if(shape.tagName.toLowerCase()==="g"&&shape.getAttribute("class")==="tianhuan-graduations"){
       target=ringById.outer;
-    }else if(shape.tagName.toLowerCase()==="circle"&&shape.getAttribute("cx")==="360"&&shape.getAttribute("cy")==="360"){
-      const radius=Number(shape.getAttribute("r"));
+    }else if(shape.tagName.toLowerCase()==="circle"){
+      const cx=Number(shape.getAttribute("cx"));
+      const cy=Number(shape.getAttribute("cy"));
+      const radius=(cx===360&&cy===360)
+        ?Number(shape.getAttribute("r"))
+        :Math.hypot(cx-360,cy-360);
       target=radius>=290?ringById.outer:
-        radius>=270?ringById.jade:
-        radius>=220?ringById.middle:
+        radius>=265?ringById.jade:
+        radius>=205?ringById.middle:
         radius>=99?ringById.inner:null;
     }else if(shape.tagName.toLowerCase()==="ellipse"){
       const radius=Number(shape.getAttribute("rx"));
@@ -248,11 +252,9 @@
     try{localStorage.setItem("yanya.xuanjing.tianhuan.rings.v1",JSON.stringify(rings.map(r=>Math.round(r.angle*100)/100)))}catch(_){}
   };
 
-  // The eight pre-heaven trigram badges form their OWN seventh orbit.
-  // The mappings and pre-heaven places below intentionally match GUA in
-  // ritual-v3.js; keep the characters upright as the orbit moves.
-  // Clockwise polar angles: north Kun, NE Zhen, east Li, SE Dui,
-  // south Qian, SW Xun, west Kan, NW Gen.
+  // Every circle's nodes must actually orbit. Previously only the eight
+  // trigram badges moved; the Yin-Yang, four signs and 16/32 little dots were
+  // rebuilt at fixed left/top coordinates on every stage change.
   const bagua=[
     {name:"乾",symbol:"☰",nature:"天",base:180},
     {name:"兑",symbol:"☱",nature:"泽",base:135},
@@ -263,106 +265,130 @@
     {name:"艮",symbol:"☶",nature:"山",base:315},
     {name:"坤",symbol:"☷",nature:"地",base:0}
   ];
-  const baguaKey="yanya.xuanjing.tianhuan.bagua.v1";
-  let baguaAngle=0,baguaVelocity=0,baguaPointer=null;
-  try{
-    const persisted=JSON.parse(localStorage.getItem(baguaKey));
-    if(Number.isFinite(persisted))baguaAngle=persisted;
-  }catch(_){}
-  const persistBagua=()=>{
-    try{localStorage.setItem(baguaKey,JSON.stringify(Math.round((((baguaAngle%360)+360)%360)*100)/100))}catch(_){}
-  };
-  const isBagua=()=>["8","64"].includes(stage.dataset.power) &&
-    nodes.querySelectorAll(".ritual-glyph").length===8;
-  const paintBagua=()=>{
-    if(!isBagua())return;
-    const badges=nodes.querySelectorAll(".ritual-glyph");
-    const rad=Math.PI/180;
-    badges.forEach((b,i)=>{
-      const angle=(bagua[i].base+baguaAngle)*rad;
-      b.style.left=(50+40*Math.sin(angle))+"%";
-      b.style.top=(50-40*Math.cos(angle))+"%";
-    });
-  };
-  const hydrateBagua=()=>{
-    if(!isBagua())return;
-    nodes.querySelectorAll(".ritual-glyph").forEach((b,i)=>{
-      const item=bagua[i];
-      b.classList.add("tianhuan-bagua-node");
-      b.dataset.baguaIndex=String(i);
-      b.setAttribute("aria-label",item.name+"卦 · "+item.nature+"。轻触选卦，拖动旋转八卦外环");
-      b.setAttribute("title",item.name+" · "+item.nature);
-      // This keeps the actual glyph and readable Hanzi together.
-      const han=document.createElement("span");
-      han.className="tianhuan-bagua-hanzi";han.textContent=item.name;
-      const sign=document.createElement("span");
-      sign.className="tianhuan-bagua-sign";sign.textContent=item.symbol;
-      b.replaceChildren(han,sign);
-    });
-    paintBagua();
-  };
-  const baguaObserver=new MutationObserver(hydrateBagua);
-  baguaObserver.observe(nodes,{childList:true});
-  hydrateBagua();
-  const baguaPointAngle=event=>{
-    const r=nodes.getBoundingClientRect();
-    return Math.atan2(event.clientY-(r.top+r.height/2),
-      event.clientX-(r.left+r.width/2))*180/Math.PI;
-  };
-  const baguaDelta=(a,b)=>((a-b+540)%360)-180;
-  let swallowBaguaClick=false;
-  nodes.addEventListener("pointerdown",event=>{
-    const badge=event.target.closest(".tianhuan-bagua-node");
-    if(!badge||event.isPrimary===false||(event.pointerType==="mouse"&&event.button!==0))return;
-    const a=baguaPointAngle(event);
-    baguaPointer={id:event.pointerId,target:badge,
-      x:event.clientX,y:event.clientY,last:a,time:performance.now(),
-      moved:false};
-    baguaVelocity=0;
+  const phaseIds=[2,4,8,16,32,64];
+  const orbitStorage="yanya.xuanjing.tianhuan.nodes.v2.";
+  const angles={};
+  phaseIds.forEach(level=>{
+    try{
+      const value=JSON.parse(localStorage.getItem(orbitStorage+level));
+      angles[level]=Number.isFinite(value)?value:0;
+    }catch(_){angles[level]=0;}
   });
-  nodes.addEventListener("pointermove",event=>{
-    const p=baguaPointer;
-    if(!p||event.pointerId!==p.id)return;
+  // Keep an existing user's eight-bagua orientation when migrating.
+  if(angles[8]===0&&angles[64]===0){
+    try{
+      const old=JSON.parse(localStorage.getItem("yanya.xuanjing.tianhuan.bagua.v1"));
+      if(Number.isFinite(old)){angles[8]=old;angles[64]=old;}
+    }catch(_){}
+  }
+  const currentPhase=()=>Number(stage.dataset.power)||8;
+  const orbitNodes=()=>Array.from(nodes.children).filter(n=>
+    n.classList?.contains("ritual-glyph")||n.classList?.contains("ritual-ember"));
+  const correctCount=level=>level===64?8:level;
+  const baseAngle=(level,index)=>level===8||level===64?bagua[index].base:
+    level===2?[270,90][index]:
+    level===4?[0,90,180,270][index]:
+    index*360/level;
+  const isOrbit=()=>{
+    const level=currentPhase();
+    return phaseIds.includes(level)&&orbitNodes().length===correctCount(level);
+  };
+  const paintNodes=()=>{
+    if(!isOrbit())return;
+    const level=currentPhase(),offset=angles[level],radians=Math.PI/180;
+    orbitNodes().forEach((n,index)=>{
+      const angle=(baseAngle(level,index)+offset)*radians;
+      n.style.left=(50+40*Math.sin(angle))+"%";
+      n.style.top=(50-40*Math.cos(angle))+"%";
+    });
+  };
+  const hydrateNodes=()=>{
+    if(!isOrbit())return;
+    const level=currentPhase();
+    orbitNodes().forEach((n,index)=>{
+      n.classList.add("tianhuan-orbit-node");
+      n.dataset.orbitPhase=String(level);
+      n.dataset.orbitIndex=String(index);
+      if(level===8||level===64){
+        const item=bagua[index];
+        n.classList.add("tianhuan-bagua-node");
+        n.setAttribute("aria-label",item.name+"卦 · "+item.nature+"。轻触选卦，拖动旋转");
+        n.title=item.name+" · "+item.nature;
+        if(!n.querySelector(".tianhuan-bagua-hanzi")){
+          const han=document.createElement("span");
+          han.className="tianhuan-bagua-hanzi";han.textContent=item.name;
+          const sign=document.createElement("span");
+          sign.className="tianhuan-bagua-sign";sign.textContent=item.symbol;
+          n.replaceChildren(han,sign);
+        }
+      }else{
+        n.setAttribute("aria-label",(n.getAttribute("aria-label")||"第"+(index+1)+"节点")+"，轻触选中，拖动旋转");
+      }
+    });
+    paintNodes();
+  };
+  const nodesObserver=new MutationObserver(hydrateNodes);
+  nodesObserver.observe(nodes,{childList:true});
+  hydrateNodes();
+  const persistNodes=()=>{
+    try{
+      phaseIds.forEach(level=>localStorage.setItem(orbitStorage+level,
+        JSON.stringify(Math.round((((angles[level]%360)+360)%360)*100)/100)));
+    }catch(_){}
+  };
+  let orbitPointer=null,orbitVelocity=0,suppressOrbitClick=false;
+  const angleOfEvent=e=>{
+    const r=nodes.getBoundingClientRect();
+    return Math.atan2(e.clientY-(r.top+r.height/2),
+      e.clientX-(r.left+r.width/2))*180/Math.PI;
+  };
+  const smallDelta=(next,prev)=>((next-prev+540)%360)-180;
+  nodes.addEventListener("pointerdown",e=>{
+    const node=e.target.closest?.(".tianhuan-orbit-node");
+    if(!node||e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
+    orbitPointer={id:e.pointerId,node,level:currentPhase(),x:e.clientX,y:e.clientY,
+      last:angleOfEvent(e),time:performance.now(),moved:false};
+    orbitVelocity=0;
+  });
+  nodes.addEventListener("pointermove",e=>{
+    const p=orbitPointer;
+    if(!p||e.pointerId!==p.id||currentPhase()!==p.level)return;
     if(!p.moved){
-      if(Math.hypot(event.clientX-p.x,event.clientY-p.y)<7)return;
+      if(Math.hypot(e.clientX-p.x,e.clientY-p.y)<6)return;
       p.moved=true;
       stage.classList.add("tianhuan-bagua-dragging");
-      try{p.target.setPointerCapture(event.pointerId)}catch(_){}
+      try{p.node.setPointerCapture(e.pointerId)}catch(_){}
     }
-    const now=performance.now(),angle=baguaPointAngle(event);
-    const delta=baguaDelta(angle,p.last),dt=Math.max(10,Math.min(now-p.time,100));
-    baguaAngle=(baguaAngle+delta+360)%360;
-    baguaVelocity=Math.max(-135,Math.min(135,baguaVelocity*.64+(delta/dt*1000)*.36));
-    p.last=angle;p.time=now;
-    paintBagua();
-    if(event.cancelable)event.preventDefault();
+    const now=performance.now(),nowAngle=angleOfEvent(e);
+    const delta=smallDelta(nowAngle,p.last),time=Math.max(10,Math.min(now-p.time,100));
+    angles[p.level]=(angles[p.level]+delta+360)%360;
+    orbitVelocity=Math.max(-155,Math.min(155,orbitVelocity*.6+(delta/time*1000)*.4));
+    p.last=nowAngle;p.time=now;
+    paintNodes();
+    if(e.cancelable)e.preventDefault();
   },{passive:false});
-  const endBagua=(event,cancelled=false)=>{
-    const p=baguaPointer;
-    if(!p||event.pointerId!==p.id)return;
-    if(p.moved){
-      swallowBaguaClick=true;
-      if(cancelled)baguaVelocity=0;
-      persistBagua();
-    }
-    baguaPointer=null;
+  const endOrbit=(e,cancelled=false)=>{
+    const p=orbitPointer;
+    if(!p||p.id!==e.pointerId)return;
+    orbitPointer=null;
     stage.classList.remove("tianhuan-bagua-dragging");
-    if(p.target.hasPointerCapture?.(event.pointerId)){
-      try{p.target.releasePointerCapture(event.pointerId)}catch(_){}
+    if(p.moved){
+      suppressOrbitClick=true;
+      if(cancelled)orbitVelocity=0;
+      persistNodes();
+    }
+    if(p.node.hasPointerCapture?.(e.pointerId)){
+      try{p.node.releasePointerCapture(e.pointerId)}catch(_){}
     }
   };
-  nodes.addEventListener("pointerup",event=>endBagua(event));
-  nodes.addEventListener("pointercancel",event=>endBagua(event,true));
-  nodes.addEventListener("lostpointercapture",event=>endBagua(event,true));
-  nodes.addEventListener("click",event=>{
-    if(!swallowBaguaClick)return;
-    swallowBaguaClick=false;
-    event.preventDefault();
-    event.stopImmediatePropagation();
+  nodes.addEventListener("pointerup",e=>endOrbit(e));
+  nodes.addEventListener("pointercancel",e=>endOrbit(e,true));
+  nodes.addEventListener("lostpointercapture",e=>endOrbit(e,true));
+  nodes.addEventListener("click",e=>{
+    if(!suppressOrbitClick)return;
+    suppressOrbitClick=false;e.preventDefault();e.stopImmediatePropagation();
   },true);
-  // Trigram clicks keep triggering the original selected-gua detail.
-  // Dragging a badge moves all eight around the shared jade ring.
-
+  // Reusable for the 2, 4, 8, 16, 32 and 64 phases; taps still select.
 
   let activeRing=null,drag=null,lastFrame=0,raf=0,visible=true,frameAt=0;
   const minmax=(x,l,h)=>Math.max(l,Math.min(h,x));
@@ -477,15 +503,18 @@
           if(!reduced?.matches&&!saveData)r.angle+=r.speed*dt;
         }
       }
-      if(!baguaPointer && isBagua()){
-        if(Math.abs(baguaVelocity)>.14){
-          baguaAngle=(baguaAngle+baguaVelocity*dt+360)%360;
-          baguaVelocity*=Math.exp(-dt*2.8);
+      if(!orbitPointer && isOrbit()){
+        const level=currentPhase();
+        if(Math.abs(orbitVelocity)>.14){
+          angles[level]=(angles[level]+orbitVelocity*dt+360)%360;
+          orbitVelocity*=Math.exp(-dt*2.8);
         }else{
-          baguaVelocity=0;
-          if(!reduced?.matches&&!saveData)baguaAngle=(baguaAngle+5.5*dt)%360;
+          orbitVelocity=0;
+          if(!reduced?.matches&&!saveData){
+            angles[level]=(angles[level]+(level>=16?4.2:5.5)*dt)%360;
+          }
         }
-        paintBagua();
+        paintNodes();
       }
       paintRings();
     }
@@ -504,10 +533,10 @@
   },{threshold:0});
   visibility.observe(stage);
   document.addEventListener("visibilitychange",()=>{
-    if(document.hidden){stopSpin();saveRings();persistBagua()}
+    if(document.hidden){stopSpin();saveRings();persistNodes()}
     else startSpin();
   });
-  window.addEventListener("pagehide",()=>{saveRings();persistBagua()});
+  window.addEventListener("pagehide",()=>{saveRings();persistNodes()});
   // Resume after switching back from the island: IntersectionObserver alone
   // does not reliably fire on every Android WebView display:none transition.
   const viewObserver=new MutationObserver(()=>{
