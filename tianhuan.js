@@ -108,12 +108,12 @@
   // Each has an enlarged invisible stroke hit target; trigram buttons stay
   // above these rings and retain their existing click handlers.
   const ringSpecs=[
-    {id:"outer",name:"外盘刻度环",radius:315,speed:.34},
-    {id:"jade",name:"玉环",radius:281,speed:-.58},
-    {id:"middle",name:"星辰铜环",radius:247,speed:.48},
-    {id:"orbitA",name:"外侧斜星轨",radius:242,speed:-.29},
-    {id:"orbitB",name:"内侧斜星轨",radius:215,speed:.41},
-    {id:"inner",name:"中心星盘",radius:155,speed:-.37}
+    {id:"outer",name:"外盘刻度环",radius:315,speed:6.5},
+    {id:"jade",name:"玉环",radius:281,speed:-8.2},
+    {id:"middle",name:"星辰铜环",radius:247,speed:7.5},
+    {id:"orbitA",name:"外侧斜星轨",radius:242,speed:-5.8},
+    {id:"orbitB",name:"内侧斜星轨",radius:215,speed:8.5},
+    {id:"inner",name:"中心星盘",radius:155,speed:-9.3}
   ];
   let previousAngles=[];
   try{
@@ -165,6 +165,55 @@
     }
     r.group.append(glints);
   });
+
+  // Deliberately asymmetrical engravings make actual motion visible:
+  // pure circles look stationary even when transform rotates them.
+  const polarPoint=(radius,degrees)=>{
+    const a=degrees*Math.PI/180;
+    return [360+radius*Math.sin(a),360-radius*Math.cos(a)];
+  };
+  const arcPath=(radius,start,end)=>{
+    const a=polarPoint(radius,start),b=polarPoint(radius,end);
+    return "M "+a[0].toFixed(2)+" "+a[1].toFixed(2)+
+      " A "+radius+" "+radius+" 0 0 1 "+b[0].toFixed(2)+" "+b[1].toFixed(2);
+  };
+  rings.forEach((r,index)=>{
+    const g=create("g",{class:"tianhuan-rotating-markers"});
+    const orbit=r.id.startsWith("orbit");
+    const points=orbit?
+      [{x:360+r.radius*Math.cos(29*Math.PI/180),
+        y:360-r.radius*Math.sin(29*Math.PI/180)}]:
+      [polarPoint(r.radius,index*37+18),polarPoint(r.radius,index*37+198)];
+    if(!orbit){
+      g.append(create("path",{
+        d:arcPath(r.radius,index*37+2,index*37+27),
+        fill:"none",stroke:"#f0d39c","stroke-width":4,
+        "stroke-linecap":"round",opacity:.94
+      }));
+      g.append(create("path",{
+        d:arcPath(r.radius,index*37+178,index*37+186),
+        fill:"none",stroke:"#9ddcc1","stroke-width":2.6,
+        "stroke-linecap":"round",opacity:.82
+      }));
+    }else{
+      const angle=(r.id==="orbitA"?-29:45)*Math.PI/180;
+      const a=r.radius,b=r.id==="orbitA"?92:70;
+      const t=(index*71+26)*Math.PI/180;
+      const x=a*Math.cos(t),y=b*Math.sin(t);
+      points[0]={x:360+x*Math.cos(angle)-y*Math.sin(angle),
+        y:360+x*Math.sin(angle)+y*Math.cos(angle)};
+    }
+    points.forEach(({x,y},i)=>{
+      const pt=create("g",{class:"tianhuan-marker"});
+      pt.append(create("circle",{cx:x,cy:y,r:i===0?8:5.3,
+        fill:"#0f4646",stroke:"#eacb94","stroke-width":i===0?2.2:1.3}));
+      pt.append(create("circle",{cx:x,cy:y,r:i===0?3.1:2,
+        fill:i===0?"#fce6b4":"#a4dec0"}));
+      g.append(pt);
+    });
+    r.group.append(g);
+  });
+
   rings.forEach(r=>{
     // Transparent hit area is the last item in each rotor so it is easy to grab.
     const hit=r.id.startsWith("orbit")?
@@ -221,7 +270,7 @@
     if(Number.isFinite(persisted))baguaAngle=persisted;
   }catch(_){}
   const persistBagua=()=>{
-    try{localStorage.setItem(baguaKey,JSON.stringify(Math.round(((baguaAngle%360)+360)%360*100)/100))}catch(_){}
+    try{localStorage.setItem(baguaKey,JSON.stringify(Math.round((((baguaAngle%360)+360)%360)*100)/100))}catch(_){}
   };
   const isBagua=()=>["8","64"].includes(stage.dataset.power) &&
     nodes.querySelectorAll(".ritual-glyph").length===8;
@@ -407,7 +456,7 @@
           baguaVelocity*=Math.exp(-dt*2.8);
         }else{
           baguaVelocity=0;
-          if(!reduced?.matches&&!saveData)baguaAngle=(baguaAngle+1.35*dt)%360;
+          if(!reduced?.matches&&!saveData)baguaAngle=(baguaAngle+5.5*dt)%360;
         }
         paintBagua();
       }
