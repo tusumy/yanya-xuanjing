@@ -774,3 +774,33 @@ body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .tianhuan-inst
     width:15px;height:15px;
   }
 }
+
+
+/* SEED 18 · Single motor, single physical ring.
+   The jade wheel and its HTML trigram/phase plaques now share one angle.
+   Only the characters counter-rotate to remain readable. */
+.tianhuan-layout .ritual-nodes{
+  transform:rotate(var(--th-jade-angle,0deg))!important;
+  transform-origin:50% 50%!important;
+  transition:none!important;
+  will-change:auto!important;
+}
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node,
+.tianhuan-layout .ritual-nodes .tianhuan-bagua-node,
+.tianhuan-layout .ritual-nodes .ritual-ember.tianhuan-orbit-node{
+  transform:translate(-50%,-50%) rotate(var(--th-jade-counter,0deg))!important;
+  transform-origin:50% 50%;
+  transition:background .14s,border-color .14s,box-shadow .14s!important;
+}
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node:hover,
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node:focus-visible,
+.tianhuan-layout .ritual-nodes .tianhuan-orbit-node.is-active{
+  transform:translate(-50%,-50%) rotate(var(--th-jade-counter,0deg)) scale(1.05)!important;
+}
+.tianhuan-layout .ritual-nodes .ritual-ember.tianhuan-orbit-node{
+  touch-action:none!important;
+  cursor:grab;
+}
+@media (prefers-reduced-motion:reduce){
+  .tianhuan-layout .ritual-nodes{transition:none!important}
+}
