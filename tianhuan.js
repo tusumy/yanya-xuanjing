@@ -47,7 +47,7 @@
   };
   const svg=create("svg",{
     class:"tianhuan-instrument",viewBox:"0 0 720 720",
-    "aria-hidden":"true",focusable:"false"
+    role:"group","aria-label":"天环 · 六层可分别拖动旋转",focusable:"true"
   });
   svg.innerHTML=
     '<defs>'+
@@ -372,17 +372,45 @@
       e.clientX-(rect.left+rect.width/2))*180/Math.PI;
   };
   const deltaAngle=(a,b)=>((a-b+540)%360)-180;
+  // On touch browsers a thin transparent SVG stroke often is NOT hit-testable.
+  // Find the closest physical ring from the pointer's actual canvas position;
+  // the full SVG becomes the touch surface, without covering trigram buttons.
+  const pickRing=e=>{
+    const rect=svg.getBoundingClientRect();
+    if(!rect.width||!rect.height)return null;
+    const x=(e.clientX-rect.left)*720/rect.width-360;
+    const y=(e.clientY-rect.top)*720/rect.height-360;
+    const radius=Math.hypot(x,y);
+    let best=null,distance=Infinity;
+    for(const r of rings){
+      let d;
+      if(r.id.startsWith("orbit")){
+        const tilt=(r.id==="orbitA"?-29:45)+r.angle;
+        const a=tilt*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);
+        const u=x*ca+y*sa,v=-x*sa+y*ca;
+        const major=r.radius,minor=r.id==="orbitA"?92:70;
+        const f=(u*u)/(major*major)+(v*v)/(minor*minor)-1;
+        const gradient=2*Math.hypot(u/(major*major),v/(minor*minor));
+        d=gradient?Math.abs(f)/gradient:Infinity;
+      }else{
+        d=Math.abs(radius-r.radius);
+      }
+      if(d<distance){distance=d;best=r;}
+    }
+    const range=window.matchMedia?.("(pointer: coarse)")?.matches?29:21;
+    return distance<=range?best:null;
+  };
   const onRingDown=e=>{
-    const hit=e.target.closest(".tianhuan-ring-hit");
-    if(!hit||e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
-    const ring=ringById[hit.dataset.ring];
+    if(e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
+    const hit=e.target.closest?.(".tianhuan-ring-hit");
+    const ring=(hit&&ringById[hit.dataset.ring])||pickRing(e);
     if(!ring)return;
     e.stopPropagation();e.preventDefault();
     activeRing=ring;
     drag={pointer:e.pointerId,prev:angleAt(e),time:performance.now(),moved:false};
     ring.velocity=0;
     stage.classList.add("tianhuan-dragging");
-    try{hit.setPointerCapture(e.pointerId)}catch(_){}
+    try{svg.setPointerCapture(e.pointerId)}catch(_){}
   };
   const onRingMove=e=>{
     if(!drag||e.pointerId!==drag.pointer||!activeRing)return;
@@ -400,9 +428,8 @@
   const finishRing=e=>{
     if(!drag||e.pointerId!==drag.pointer)return;
     e.stopPropagation();
-    const hit=e.target.closest(".tianhuan-ring-hit");
-    if(hit?.hasPointerCapture?.(e.pointerId)){
-      try{hit.releasePointerCapture(e.pointerId)}catch(_){}
+    if(svg.hasPointerCapture?.(e.pointerId)){
+      try{svg.releasePointerCapture(e.pointerId)}catch(_){}
     }
     activeRing=null;drag=null;
     stage.classList.remove("tianhuan-dragging");
@@ -481,6 +508,13 @@
     else startSpin();
   });
   window.addEventListener("pagehide",()=>{saveRings();persistBagua()});
+  // Resume after switching back from the island: IntersectionObserver alone
+  // does not reliably fire on every Android WebView display:none transition.
+  const viewObserver=new MutationObserver(()=>{
+    if(document.body.dataset.homeView==="cosmos")startSpin();
+    else stopSpin();
+  });
+  viewObserver.observe(document.body,{attributes:true,attributeFilter:["data-home-view"]});
   startSpin();
 
 
