@@ -183,7 +183,7 @@
     const points=orbit?
       [{x:360+r.radius*Math.cos(29*Math.PI/180),
         y:360-r.radius*Math.sin(29*Math.PI/180)}]:
-      [polarPoint(r.radius,index*37+18),polarPoint(r.radius,index*37+198)];
+      [polarPoint(r.radius,index*37+18),polarPoint(r.radius,index*37+198)].map(([x,y])=>({x,y}));
     if(!orbit){
       g.append(create("path",{
         d:arcPath(r.radius,index*37+2,index*37+27),
