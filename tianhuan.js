@@ -148,6 +148,9 @@
     }else if(shape.tagName.toLowerCase()==="ellipse"){
       const radius=Number(shape.getAttribute("rx"));
       target=radius>=235?ringById.orbitA:ringById.orbitB;
+    }else if(shape.tagName.toLowerCase()==="path"){
+      // Pendant and the vertical outer-axis pins are fixed to the outer wheel.
+      target=ringById.outer;
     }
     if(target)target.group.append(shape);
   }
@@ -246,6 +249,10 @@
       r.group.setAttribute("transform","rotate("+a.toFixed(3)+" 360 360)");
       r.hit.setAttribute("aria-valuenow",String(Math.round(a)%360));
     }
+    // The HTML orbit is physically the same jade rotor. One angle owns both.
+    const jade=((ringById.jade.angle%360)+360)%360;
+    nodes.style.setProperty("--th-jade-angle",jade.toFixed(3)+"deg");
+    nodes.style.setProperty("--th-jade-counter",(-jade).toFixed(3)+"deg");
   };
   paintRings();
   const saveRings=()=>{
@@ -265,54 +272,22 @@
     {name:"艮",symbol:"☶",nature:"山",base:315},
     {name:"坤",symbol:"☷",nature:"地",base:0}
   ];
-  const phaseIds=[2,4,8,16,32,64];
-  const orbitStorage="yanya.xuanjing.tianhuan.nodes.v2.";
-  const angles={};
-  phaseIds.forEach(level=>{
-    try{
-      const value=JSON.parse(localStorage.getItem(orbitStorage+level));
-      angles[level]=Number.isFinite(value)?value:0;
-    }catch(_){angles[level]=0;}
-  });
-  // Keep an existing user's eight-bagua orientation when migrating.
-  if(angles[8]===0&&angles[64]===0){
-    try{
-      const old=JSON.parse(localStorage.getItem("yanya.xuanjing.tianhuan.bagua.v1"));
-      if(Number.isFinite(old)){angles[8]=old;angles[64]=old;}
-    }catch(_){}
-  }
+  // The plaques and dots belong to the jade ring, rather than having
+  // an independent orbital motor. DOM nodes stay inside the original HTML
+  // overlay so that all existing buttons, click handlers and keyboard focus work.
   const currentPhase=()=>Number(stage.dataset.power)||8;
   const orbitNodes=()=>Array.from(nodes.children).filter(n=>
     n.classList?.contains("ritual-glyph")||n.classList?.contains("ritual-ember"));
-  const correctCount=level=>level===64?8:level;
-  const baseAngle=(level,index)=>level===8||level===64?bagua[index].base:
-    level===2?[270,90][index]:
-    level===4?[0,90,180,270][index]:
-    index*360/level;
-  const isOrbit=()=>{
-    const level=currentPhase();
-    return phaseIds.includes(level)&&orbitNodes().length===correctCount(level);
-  };
-  const paintNodes=()=>{
-    if(!isOrbit())return;
-    const level=currentPhase(),offset=angles[level],radians=Math.PI/180;
-    orbitNodes().forEach((n,index)=>{
-      const angle=(baseAngle(level,index)+offset)*radians;
-      n.style.left=(50+40*Math.sin(angle))+"%";
-      n.style.top=(50-40*Math.cos(angle))+"%";
-    });
-  };
   const hydrateNodes=()=>{
-    if(!isOrbit())return;
     const level=currentPhase();
     orbitNodes().forEach((n,index)=>{
       n.classList.add("tianhuan-orbit-node");
-      n.dataset.orbitPhase=String(level);
       n.dataset.orbitIndex=String(index);
       if(level===8||level===64){
         const item=bagua[index];
+        if(!item)return;
         n.classList.add("tianhuan-bagua-node");
-        n.setAttribute("aria-label",item.name+"卦 · "+item.nature+"。轻触选卦，拖动旋转");
+        n.setAttribute("aria-label",item.name+"卦 · "+item.nature+"。轻触选卦，按住转玉环");
         n.title=item.name+" · "+item.nature;
         if(!n.querySelector(".tianhuan-bagua-hanzi")){
           const han=document.createElement("span");
@@ -322,21 +297,14 @@
           n.replaceChildren(han,sign);
         }
       }else{
-        n.setAttribute("aria-label",(n.getAttribute("aria-label")||"第"+(index+1)+"节点")+"，轻触选中，拖动旋转");
+        n.setAttribute("aria-label",(n.getAttribute("aria-label")||"节点")+"，轻触选中，按住转玉环");
       }
     });
-    paintNodes();
   };
   const nodesObserver=new MutationObserver(hydrateNodes);
   nodesObserver.observe(nodes,{childList:true});
   hydrateNodes();
-  const persistNodes=()=>{
-    try{
-      phaseIds.forEach(level=>localStorage.setItem(orbitStorage+level,
-        JSON.stringify(Math.round((((angles[level]%360)+360)%360)*100)/100)));
-    }catch(_){}
-  };
-  let orbitPointer=null,orbitVelocity=0,suppressOrbitClick=false;
+  let orbitPointer=null,suppressOrbitClick=false;
   const angleOfEvent=e=>{
     const r=nodes.getBoundingClientRect();
     return Math.atan2(e.clientY-(r.top+r.height/2),
@@ -344,51 +312,54 @@
   };
   const smallDelta=(next,prev)=>((next-prev+540)%360)-180;
   nodes.addEventListener("pointerdown",e=>{
-    const node=e.target.closest?.(".tianhuan-orbit-node");
-    if(!node||e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
-    orbitPointer={id:e.pointerId,node,level:currentPhase(),x:e.clientX,y:e.clientY,
+    const n=e.target.closest?.(".tianhuan-orbit-node");
+    if(!n||e.isPrimary===false||(e.pointerType==="mouse"&&e.button!==0))return;
+    orbitPointer={id:e.pointerId,node:n,x:e.clientX,y:e.clientY,
       last:angleOfEvent(e),time:performance.now(),moved:false};
-    orbitVelocity=0;
+    activeRing=ringById.jade;
+    ringById.jade.velocity=0;
+    try{n.setPointerCapture(e.pointerId)}catch(_){}
   });
   nodes.addEventListener("pointermove",e=>{
     const p=orbitPointer;
-    if(!p||e.pointerId!==p.id||currentPhase()!==p.level)return;
+    if(!p||e.pointerId!==p.id)return;
     if(!p.moved){
       if(Math.hypot(e.clientX-p.x,e.clientY-p.y)<6)return;
       p.moved=true;
       stage.classList.add("tianhuan-bagua-dragging");
-      try{p.node.setPointerCapture(e.pointerId)}catch(_){}
     }
-    const now=performance.now(),nowAngle=angleOfEvent(e);
-    const delta=smallDelta(nowAngle,p.last),time=Math.max(10,Math.min(now-p.time,100));
-    angles[p.level]=(angles[p.level]+delta+360)%360;
-    orbitVelocity=Math.max(-155,Math.min(155,orbitVelocity*.6+(delta/time*1000)*.4));
-    p.last=nowAngle;p.time=now;
-    paintNodes();
+    const now=performance.now(),a=angleOfEvent(e);
+    const delta=smallDelta(a,p.last),ms=Math.max(10,Math.min(now-p.time,100));
+    ringById.jade.angle=(ringById.jade.angle+delta+360)%360;
+    ringById.jade.velocity=Math.max(-135,Math.min(135,
+      ringById.jade.velocity*.6+(delta/ms*1000)*.4));
+    p.last=a;p.time=now;
+    paintRings();
     if(e.cancelable)e.preventDefault();
   },{passive:false});
-  const endOrbit=(e,cancelled=false)=>{
+  const finishNodes=(e,cancelled=false)=>{
     const p=orbitPointer;
     if(!p||p.id!==e.pointerId)return;
     orbitPointer=null;
+    if(activeRing===ringById.jade)activeRing=null;
     stage.classList.remove("tianhuan-bagua-dragging");
     if(p.moved){
       suppressOrbitClick=true;
-      if(cancelled)orbitVelocity=0;
-      persistNodes();
+      if(cancelled)ringById.jade.velocity=0;
+      saveRings();
     }
     if(p.node.hasPointerCapture?.(e.pointerId)){
       try{p.node.releasePointerCapture(e.pointerId)}catch(_){}
     }
   };
-  nodes.addEventListener("pointerup",e=>endOrbit(e));
-  nodes.addEventListener("pointercancel",e=>endOrbit(e,true));
-  nodes.addEventListener("lostpointercapture",e=>endOrbit(e,true));
+  nodes.addEventListener("pointerup",e=>finishNodes(e));
+  nodes.addEventListener("pointercancel",e=>finishNodes(e,true));
+  nodes.addEventListener("lostpointercapture",e=>finishNodes(e,true));
   nodes.addEventListener("click",e=>{
     if(!suppressOrbitClick)return;
-    suppressOrbitClick=false;e.preventDefault();e.stopImmediatePropagation();
+    suppressOrbitClick=false;
+    e.preventDefault();e.stopImmediatePropagation();
   },true);
-  // Reusable for the 2, 4, 8, 16, 32 and 64 phases; taps still select.
 
   let activeRing=null,drag=null,lastFrame=0,raf=0,visible=true,frameAt=0;
   const minmax=(x,l,h)=>Math.max(l,Math.min(h,x));
@@ -503,19 +474,6 @@
           if(!reduced?.matches&&!saveData)r.angle+=r.speed*dt;
         }
       }
-      if(!orbitPointer && isOrbit()){
-        const level=currentPhase();
-        if(Math.abs(orbitVelocity)>.14){
-          angles[level]=(angles[level]+orbitVelocity*dt+360)%360;
-          orbitVelocity*=Math.exp(-dt*2.8);
-        }else{
-          orbitVelocity=0;
-          if(!reduced?.matches&&!saveData){
-            angles[level]=(angles[level]+(level>=16?4.2:5.5)*dt)%360;
-          }
-        }
-        paintNodes();
-      }
       paintRings();
     }
     raf=requestAnimationFrame(spin);
@@ -533,10 +491,10 @@
   },{threshold:0});
   visibility.observe(stage);
   document.addEventListener("visibilitychange",()=>{
-    if(document.hidden){stopSpin();saveRings();persistNodes()}
+    if(document.hidden){stopSpin();saveRings()}
     else startSpin();
   });
-  window.addEventListener("pagehide",()=>{saveRings();persistNodes()});
+  window.addEventListener("pagehide",()=>{saveRings()});
   // Resume after switching back from the island: IntersectionObserver alone
   // does not reliably fire on every Android WebView display:none transition.
   const viewObserver=new MutationObserver(()=>{
