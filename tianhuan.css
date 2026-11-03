@@ -711,3 +711,34 @@ body[data-home-view="cosmos"][data-period="day"] .tianhuan-layout .tianhuan-inst
    border-width:1.5px;
  }
 }
+
+
+/* SEED 16 · A reliable touch surface for ALL rings.
+   SVG transparent strokes alone fail hit testing in some Android WebViews. */
+.tianhuan-layout .tianhuan-instrument{
+  pointer-events:all!important;
+  touch-action:none!important;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.tianhuan-layout .tianhuan-instrument .tianhuan-ring-hit{
+  pointer-events:stroke!important;
+  stroke-opacity:.003;
+}
+.tianhuan-layout .tianhuan-rotating-markers,
+.tianhuan-layout .tianhuan-rotating-markers *{
+  pointer-events:none;
+}
+.tianhuan-layout .tianhuan-marker{
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.tianhuan-layout .tianhuan-bagua-node{
+  touch-action:none!important;
+}
+@media(max-width:680px){
+  .tianhuan-layout .tianhuan-instrument{
+    will-change:auto!important;
+    filter:none!important;
+  }
+}
