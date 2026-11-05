@@ -76,7 +76,8 @@ const friendlyError=e=>{
 function mount(content){
   singleton?.dispose();
   let disposed=false,pending=null,loadingModels=false,drawer="";
-  let threads=read(THREADS,[]).map?.(thread).filter(Boolean).slice(0,MAX_THREADS)||[];
+  const rawThreads=read(THREADS,[]);
+  let threads=Array.isArray(rawThreads)?rawThreads.map(thread).filter(Boolean).slice(0,MAX_THREADS):[];
   if(!threads.length){
     const prev=read(LEGACY,[]);
     const old=Array.isArray(prev)?prev.filter(x=>typeof x==="string"&&x.trim()):[];
