@@ -431,3 +431,91 @@ body[data-period="day"] .real-chat-empty-icon{color:#8f9967}
   .real-chat-sidebar .real-chat-new{font-size:10px}
   .real-chat-setting-button{padding:7px 8px;font-size:10px}
 }
+
+
+/* SEED 20 — Fix Android chat input floating halfway down the screen.
+   The mobile chat main was a flex child with no flex-grow, so its height
+   collapsed to content instead of filling the remaining viewport. */
+.panel.is-chat{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  min-height:0;
+  overflow:hidden;
+}
+.panel.is-chat .panel-head{
+  flex:0 0 auto;
+}
+.panel.is-chat .panel-content{
+  flex:1 1 0%;
+  height:auto;
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.panel.is-chat .real-chat{
+  flex:1 1 0%;
+  width:100%;
+  height:auto;
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+}
+.panel.is-chat .real-chat-main{
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+}
+.panel.is-chat .real-chat-messages{
+  flex:1 1 0%;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+}
+.panel.is-chat .real-chat-status,
+.panel.is-chat .real-chat-compose{
+  flex:0 0 auto;
+}
+@media (max-width:760px){
+  .panel.is-chat{
+    inset:0 0 auto auto;
+    height:100vh;
+    height:100dvh;
+    max-height:100dvh;
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+  .panel.is-chat .real-chat{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 0%;
+    height:auto;
+    min-height:0;
+  }
+  .panel.is-chat .real-chat-sidebar{
+    flex:0 0 auto;
+    max-height:145px;
+  }
+  .panel.is-chat .real-chat-main{
+    flex:1 1 0%;
+    height:0; /* critical: Chrome Android must not size main from its content */
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .panel.is-chat .real-chat-messages{
+    flex:1 1 0%;
+    min-height:0;
+    overflow-y:auto;
+  }
+  .panel.is-chat .real-chat-compose{
+    position:relative;
+    z-index:1;
+    margin-top:auto;
+    flex:0 0 auto;
+  }
+  .panel.is-chat .real-chat-compose-input{
+    font-size:16px;
+  }
+}
