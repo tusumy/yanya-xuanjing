@@ -7,7 +7,7 @@
   const CHAT_KEY = PREFIX + "chat-preview.v1";
   const PERIOD_KEY = PREFIX + "period-override.v1";
   const LOCATIONS = {
-    heart: { title: "岛心 · 对话", kicker: "CHAT / OFFLINE PREVIEW" },
+    heart: { title: "岛心 · 对话", kicker: "LIVE CHAT / LOCAL FIRST" },
     stars: { title: "星阁", kicker: "CONSTELLATION OF MEMORIES" },
     oracle: { title: "签庭", kicker: "THE ORACLE GARDEN" },
     library: { title: "藏书楼", kicker: "LIBRARY OF WORLDS" },
@@ -104,38 +104,11 @@
   dateLabel();
 
   function renderHeart() {
-    content.append(lead("从这里走进我们日常的对话。现在是离线界面原型，尚未连接旧砚屿的模型、角色与聊天记录。"));
-    const messageArea = element("div", "module-card");
-    const info = element("h3", "", "✦ 对话主殿 · 离线预览（尚未接入 AI）");
-    const chatBox = element("div", "chat-preview");
-    const greeting = element("div", "chat-bubble", "你来了。岛上的第一盏灯已经点亮，等你给它添一点故事。");
-    chatBox.append(greeting);
-    chatHistory().forEach(text => chatBox.append(element("div", "chat-bubble mine", text)));
-
-    const composer = element("div", "chat-composer");
-    const input = element("textarea", "field");
-    input.placeholder = "试着写一句话…";
-    input.rows = 2;
-    input.maxLength = 2000;
-    input.setAttribute("aria-label", "聊天界面预览输入");
-    const send = button("发送", () => {
-      const text = input.value.trim();
-      if (!text) return;
-      const saved = chatHistory().slice(-24).concat(text);
-      if (!safeWrite(CHAT_KEY, saved)) {
-        status.textContent = "本机存储不可用，这条消息没有保存。";
-        return;
-      }
-      chatBox.append(element("div", "chat-bubble mine", text));
-      input.value = "";
-      status.textContent = "已存在此设备。模型接入后，才会有真实回复。";
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-    composer.append(input, send);
-    const status = element("p", "minor-note", "本页只保存界面测试消息到本机，不会调用 AI 接口。");
-    messageArea.append(info, chatBox, composer, status);
-    content.append(messageArea);
-    content.append(card("后续连接", "复用原砚屿已经验证的 API、MCP、书房和语音能力；采用清晰的模块接口与数据迁移预览，而不是直接混用旧版存储。"));
+    if(window.YanyaChat && typeof window.YanyaChat.mount==="function"){
+      window.YanyaChat.mount(content);
+    }else{
+      content.append(lead("对话功能没有载入。请刷新页面后重试。"));
+    }
   }
 
   function renderMemories() {
@@ -249,7 +222,9 @@
     const location = LOCATIONS[id];
     if (!location) return;
     if (!currentLocation) previousFocus = document.activeElement;
+    if(currentLocation==="heart" && id!=="heart")window.YanyaChat?.dispose?.();
     currentLocation = id;
+    panel.classList.toggle("is-chat",id==="heart");
     $("#panelTitle").textContent = location.title;
     $("#panelKicker").textContent = location.kicker;
     content.replaceChildren();
@@ -269,8 +244,9 @@
   }
   function closePanel() {
     if (!currentLocation) return;
+    if(currentLocation==="heart")window.YanyaChat?.dispose?.();
     currentLocation = null;
-    panel.classList.remove("is-open");
+    panel.classList.remove("is-open","is-chat");
     panel.setAttribute("aria-hidden", "true");
     scrim.hidden = true;
     document.body.classList.remove("panel-open");
