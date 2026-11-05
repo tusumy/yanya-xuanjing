@@ -106,7 +106,7 @@ function mount(content){
   providerSelect.setAttribute("aria-label","切换接口");
   const modelSelect=node("select","chat-next-model");
   modelSelect.setAttribute("aria-label","切换模型");
-  const addButton=btn("＋",newThread,"chat-next-icon");
+  const addButton=btn("＋",()=>newThread(),"chat-next-icon");
   addButton.setAttribute("aria-label","新建对话");
   const settingsButton=btn("⚙",()=>openDrawer("settings"),"chat-next-icon");
   settingsButton.setAttribute("aria-label","管理接口");
