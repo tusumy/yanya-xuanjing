@@ -32,7 +32,7 @@ const keyDel=id=>{try{sessionStorage.removeItem(P+"provider-secret."+id)}catch(_
 const uid=()=>Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);
 const timestamp=()=>new Date().toISOString();
 const message=m=>m&&["user","assistant"].includes(m.role)&&typeof m.content==="string"?
-  {role:m.role,content:m.content.slice(0,MAX_TEXT),at:typeof m.at==="string"?m.at:timestamp()}:null;
+  {role:m.role,content:m.content.slice(0,MAX_TEXT),attachments:window.YanyaAttachments?.normalize(m.attachments)||[],at:typeof m.at==="string"?m.at:timestamp()}:null;
 const thread=t=>{
   if(!t||!Array.isArray(t.messages))return null;
   return {id:typeof t.id==="string"&&t.id.length<100?t.id:uid(),
@@ -86,7 +86,8 @@ const friendlyError=e=>{
 };
 function mount(content){
   singleton?.dispose();
-  let disposed=false,pending=null,loadingModels=false,drawer="";
+  let disposed=false,pending=null,loadingModels=false,drawer="",attaching=false;
+  let draftAttachments=[];const drafts=new Map();
   const rawThreads=read(THREADS,[]);
   let threads=Array.isArray(rawThreads)?rawThreads.map(thread).filter(Boolean).slice(0,MAX_THREADS):[];
   if(!threads.length){
@@ -144,10 +145,26 @@ function mount(content){
   const actionArea=node("div","chat-next-composer-actions");
   const retryButton=btn("重试",()=>send(true),"chat-next-retry");
   const sendButton=btn("发送",()=>send(false),"chat-next-send");
+  const attachmentsInput=node("input");attachmentsInput.type="file";attachmentsInput.multiple=true;attachmentsInput.hidden=true;
+  attachmentsInput.accept="image/jpeg,image/png,image/webp,.txt,.md,.markdown,.json,.csv,.log,.js,.ts,.py,.html,.css,.xml,.yaml,.yml";
+  const attachmentTray=node("div","chat-attachment-tray");attachmentTray.hidden=true;
+  const renderDraft=()=>{attachmentTray.replaceChildren();attachmentTray.hidden=!draftAttachments.length;window.YanyaAttachments?.render(attachmentTray,draftAttachments,index=>{if(!pending){draftAttachments.splice(index,1);renderDraft()}})};
+  const attachButton=btn("＋ 附件",()=>attachmentsInput.click(),"chat-next-attach");
+  attachmentsInput.addEventListener("change",async()=>{
+    const files=[...(attachmentsInput.files||[])];attachmentsInput.value="";if(!files.length||attaching||pending)return;
+    if(files.length+draftAttachments.length>4){setStatus("每条消息最多 4 个附件，其中图片最多 2 张。",true);return}
+    const target=current;attaching=true;attachButton.disabled=true;setStatus("正在处理附件……");
+    try{const next=[];for(const file of files)next.push(await window.YanyaAttachments.fromFile(file));
+      if([...draftAttachments,...next].filter(a=>a.kind==="image").length>2)throw Error("每条消息最多 2 张图片。");
+      if(disposed||current!==target)return;draftAttachments.push(...next);renderDraft();setStatus("附件已就绪。图片需要支持视觉的模型；点击附件可预览。");
+    }catch(e){if(!disposed)setStatus(e.message,true)}finally{attaching=false;attachButton.disabled=false}
+  });
+  const saveDraft=()=>drafts.set(current,{text:input.value,attachments:draftAttachments});
+  const loadDraft=()=>{const d=drafts.get(current);input.value=d?.text||"";draftAttachments=d?.attachments||[];renderDraft()};
   const stopButton=btn("停止",()=>pending?.abort(),"chat-next-stop");
   stopButton.hidden=true;
-  actionArea.append(retryButton,sendButton,stopButton);
-  compose.append(input,actionArea);
+  actionArea.append(attachButton,retryButton,sendButton,stopButton);
+  const composeBody=node("div","chat-next-compose-body");composeBody.append(attachmentTray,input,attachmentsInput);compose.append(composeBody,actionArea);
   const shade=node("div","chat-next-overlay");
   shade.hidden=true;
   const sheet=node("div","chat-next-sheet");
@@ -165,8 +182,9 @@ function mount(content){
 
   const persist=()=>{
     threads.sort((a,b)=>b.updated.localeCompare(a.updated));
-    if(!save(THREADS,threads.slice(0,MAX_THREADS)))setStatus("本机空间不足，聊天未能保存。请导出备份。",true);
-    save(CURRENT,current);
+    const ok=save(THREADS,threads.slice(0,MAX_THREADS));
+    if(!ok)setStatus("本机空间不足，聊天未能保存。请导出备份或清理旧记录。",true);
+    save(CURRENT,current);return ok;
   };
   const storeProviders=()=>{save(PROVIDERS,providers);save(ACTIVE,active)};
   const setStatus=(text="",error=false)=>{
@@ -180,7 +198,9 @@ function mount(content){
     const avatar=window.YanyaAssets?.avatar(m.role,window.YanyaLibrary?.characterId(selectedThread().characterId)||selectedThread().characterId||"");
     if(avatar){const img=node("img","chat-next-avatar");img.src=avatar;img.alt=m.role==="user"?"你的头像":"角色头像";img.width=img.height=36;box.append(img);}
     const content=node("div","chat-next-bubble",m.content);
+    if(!m.content&&m.attachments?.length)content.hidden=true;
     box.append(content);
+    const attached=node("div","chat-message-attachments");window.YanyaAttachments?.render(attached,m.attachments);box.append(attached);
     if(m.role==="assistant"){
       const copy=btn("复制",async()=>{
         try{await navigator.clipboard.writeText(m.content);copy.textContent="已复制"}
@@ -247,19 +267,20 @@ function mount(content){
     sendButton.hidden=bool;stopButton.hidden=!bool;
     input.disabled=bool;retryButton.disabled=bool;
     providerSelect.disabled=bool;modelSelect.disabled=bool;
-    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;roleSelect.disabled=bool;
+    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;roleSelect.disabled=bool;attachButton.disabled=bool;
   };
   const newThread=()=>{
-    if(pending)return;
+    if(pending||attaching)return;
+    saveDraft();
     const t={id:uid(),characterId:roleSelect.value||"",title:"新对话",updated:timestamp(),messages:[]};
     threads.unshift(t);if(threads.length>MAX_THREADS)threads.length=MAX_THREADS;
     const greeting=bookContext(t.characterId).greeting;
     if(greeting)t.messages.push({role:"assistant",content:greeting,at:timestamp()});
-    current=t.id;persist();renderMessages();openDrawer("");input.focus();
+    current=t.id;loadDraft();persist();renderMessages();openDrawer("");input.focus();
   };
   const chooseThread=id=>{
-    if(pending)return;
-    if(threads.some(x=>x.id===id)){current=id;persist();renderMessages();openDrawer("")}
+    if(pending||attaching)return;
+    if(threads.some(x=>x.id===id)){saveDraft();current=id;loadDraft();persist();renderMessages();openDrawer("")}
   };
   const exportHistory=()=>{
     const data={format:"yanya-chat-v1",exportedAt:timestamp(),threads};
@@ -276,13 +297,15 @@ function mount(content){
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];fileInput.value="";
     if(!file)return;
-    if(file.size>2*1024*1024){setStatus("导入文件超过 2 MB。",true);return}
+    if(file.size>24*1024*1024){setStatus("导入文件超过 24 MB。",true);return}
     try{
       const data=JSON.parse(await file.text());
       if(data?.format!=="yanya-chat-v1"||!Array.isArray(data.threads))throw Error("文件格式不正确");
       const list=data.threads.map(thread).filter(Boolean).slice(0,MAX_THREADS);
       if(!list.length)throw Error("没有可导入的对话");
       if(!confirm("导入 "+list.length+" 段对话，并与本机记录合并？"))return;
+      const previous=threads.slice(),previousCurrent=current;
+      if(threads.length+list.length>MAX_THREADS)throw Error("合并后超过 36 段对话，请先导出并删除不需要的记录。");
       const existing=new Set(threads.map(t=>t.id));
       list.forEach(t=>{
         if(existing.has(t.id))t.id=uid();
@@ -290,7 +313,7 @@ function mount(content){
       });
       threads.sort((a,b)=>b.updated.localeCompare(a.updated));
       threads.length=Math.min(threads.length,MAX_THREADS);
-      current=threads[0].id;persist();renderMessages();openDrawer("");
+      current=threads[0].id;if(!persist()){threads=previous;current=previousCurrent;renderMessages();return}loadDraft();renderMessages();openDrawer("");
       setStatus("导入成功。");
     }catch(e){setStatus("导入失败："+friendlyError(e),true)}
   });
@@ -474,16 +497,17 @@ function mount(content){
     p.model=modelSelect.value;storeProviders();
     setStatus("当前模型："+p.model);
   });
-  const append=(t,role,text)=>{
-    t.messages.push({role,content:text.slice(0,MAX_TEXT),at:timestamp()});
+  const append=(t,role,text,attachments=[])=>{
+    const previous=t.messages.slice(),oldUpdated=t.updated,oldTitle=t.title;
+    t.messages.push({role,content:text.slice(0,MAX_TEXT),attachments,at:timestamp()});
     t.messages=t.messages.slice(-MAX_MESSAGES);
-    if(role==="user"&&t.title==="新对话")t.title=text.replace(/\s+/g," ").slice(0,24)||"新对话";
-    t.updated=timestamp();persist();
+    if(role==="user"&&t.title==="新对话")t.title=(text||attachments[0]?.name||"新对话").replace(/\s+/g," ").slice(0,24);
+    t.updated=timestamp();if(!persist()){t.messages=previous;t.updated=oldUpdated;t.title=oldTitle;return false}return true;
   };
   async function send(retry=false,spokenText=null){
-    if(pending||disposed||(spokenText===null&&window.YanyaVoice?.isCalling()))return;
+    if(pending||attaching||disposed||(spokenText===null&&window.YanyaVoice?.isCalling()))return;
     const p=picked(),text=spokenText===null?input.value.trim():spokenText.trim();
-    if(!retry&&!text)return;
+    if(!retry&&!text&&!(spokenText===null&&draftAttachments.length))return;
     if(!p.url||!p.model){
       setStatus("先在「接口与模型」配置接口及模型。",true);
       openDrawer("settings");return;
@@ -494,14 +518,16 @@ function mount(content){
     if(retry){
       if(t.messages.at(-1)?.role!=="user")return;
     }else{
-      append(t,"user",text);if(spokenText===null)input.value="";
+      const attachments=spokenText===null?draftAttachments:[];
+      if(!append(t,"user",text,attachments))return;
+      if(spokenText===null){input.value="";draftAttachments=[];drafts.delete(current);renderDraft();}
     }
     renderMessages();
     const callState=window.YanyaVoice?.isCalling()?"当前正在语音通话中，请使用自然、适合朗读的口语回复。":t.calls?.length?"最近一次语音通话已挂断，当前为文字聊天。":"";
     const messages=[
       ...(callState?[{role:"system",content:callState}]:[]),
       ...([p.system.trim(),bookContext(t.characterId).system].filter(Boolean).length?[{role:"system",content:[p.system.trim(),bookContext(t.characterId).system].filter(Boolean).join("\n\n")}]:[]),
-      ...t.messages.slice(-40).map(m=>({role:m.role,content:m.content}))
+      ...t.messages.slice(-40).map(m=>window.YanyaAttachments?.apiMessage(m)||({role:m.role,content:m.content}))
     ];
     const controller=new AbortController();
     pending=controller;setBusy(true);
@@ -581,7 +607,7 @@ function mount(content){
       }
       if(!reply.trim())throw Error("接口返回为空；确认模型名称、服务商格式和流式选项。");
       if(!disposed){
-        append(t,"assistant",reply);renderMessages();setStatus("");
+        if(!append(t,"assistant",reply)){t.messages.push({role:"assistant",content:reply,at:timestamp()});renderMessages();setStatus("回复已收到但未能保存，刷新前请先复制或导出。",true);return reply}renderMessages();setStatus("");
         return reply;
       }
     }catch(e){
@@ -601,11 +627,11 @@ function mount(content){
   const voiceAdapter={
     avatar:()=>window.YanyaAssets?.avatar("assistant",window.YanyaLibrary?.characterId(selectedThread().characterId)||"")||"",
     name:()=>window.YanyaLibrary?.characterName(selectedThread().characterId)||picked().name||"角色",
-    ready:()=>!pending&&Boolean(picked().url&&picked().model),
+    ready:()=>!pending&&!attaching&&Boolean(picked().url&&picked().model),
     send:text=>send(false,text),
     stop:()=>pending?.abort(),
     record(duration){const t=selectedThread();(t.calls||(t.calls=[])).push({at:timestamp(),duration});t.calls=t.calls.slice(-100);persist();renderMessages()},
-    lock(value){roleSelect.disabled=value;historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
+    lock(value){attachButton.disabled=value;roleSelect.disabled=value;historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
   };
   input.addEventListener("keydown",e=>{
     if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){
@@ -630,7 +656,7 @@ function mount(content){
   save(PROVIDERS,providers);
   renderProviders();renderMessages();setStatus("");
   singleton={dispose(){
-    window.YanyaVoice?.dispose();disposed=true;pending?.abort();
+    window.YanyaAttachments?.close();window.YanyaVoice?.dispose();disposed=true;pending?.abort();
     visual?.removeEventListener("resize",adjustViewport);
     visual?.removeEventListener("scroll",adjustViewport);
     input.removeEventListener("focus",onFocus);

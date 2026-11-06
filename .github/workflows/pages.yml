@@ -36,11 +36,14 @@ jobs:
           node --check voice.js
           node --check theme.js
           node --check personal-assets.js
+          node --check attachments.js
           node tests/chat-integration.cjs
           node tests/mcp-data.cjs
           node tests/voice.cjs
           node tests/theme.cjs
           node tests/personal-assets.cjs
+          node tests/attachments.cjs
+          node tests/chat-attachments.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
