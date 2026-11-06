@@ -1,33 +1,51 @@
-/* Local book shelf; deliberately isolated from the original 砚屿 storage. */
+/* Structured local books: character, greetings, conditional lore and chapter summaries. */
 (()=>{
 'use strict';
-const KEY='yanya.xuanjing.library.v1';
-const clean=x=>({user:String(x?.user||'').slice(0,80),active:String(x?.active||''),cards:(Array.isArray(x?.cards)?x.cards:[]).slice(0,100).map(c=>({id:String(c.id||Date.now()),name:String(c.name||'新角色').slice(0,80),system:String(c.system||'').slice(0,12000),world:String(c.world||'').slice(0,12000),greeting:String(c.greeting||'').slice(0,12000)}))});
+const KEY='yanya.xuanjing.library.v1',controllers=new Set();let serial=0;
+const str=(x,n=12000)=>String(x??'').slice(0,n),array=x=>Array.isArray(x)?x:[],uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+function clean(raw){const x=raw&&typeof raw==='object'?raw:{};return {user:str(x.user,80),active:str(x.active,100),cards:array(x.cards).filter(c=>c&&typeof c==='object').slice(0,100).map(c=>({id:str(c.id||uid(),100),name:str(c.name||'新角色',80),system:str(c.system),world:str(c.world),greeting:str(c.greeting),greetings:array(c.greetings).filter(g=>typeof g==='string').slice(0,12).map(g=>str(g)),greetingIndex:Math.max(0,Math.min(12,Math.floor(Number(c.greetingIndex)||0))),scanDepth:Math.max(1,Math.min(20,Math.floor(Number(c.scanDepth)||6))),lore:array(c.lore).filter(l=>l&&typeof l==='object').slice(0,80).map(l=>({id:str(l.id||uid(),100),title:str(l.title||'设定',80),text:str(l.text,6000),keywords:str(l.keywords,500),mode:l.mode==='all'?'all':'any',always:l.always===true,enabled:l.enabled!==false})),chapters:array(c.chapters).filter(h=>h&&typeof h==='object').slice(0,40).map(h=>({id:str(h.id||uid(),100),title:str(h.title||'章节',100),text:str(h.text,30000),summary:str(h.summary,500),include:h.include===true}))}))}}
 const read=()=>{try{return clean(JSON.parse(localStorage.getItem(KEY)))}catch(_){return clean({})}};
-const el=(tag,text)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e};
-window.YanyaLibrary={characterId:id=>id||read().active,characters:()=>read().cards,characterName(id){const d=read();return d.cards.find(c=>c.id===(id||d.active))?.name||""},context(id){
- const d=read(),c=d.cards.find(c=>c.id===(id||d.active));
+function context(id,messages=[],options={}){
+ const d=read(),c=d.cards.find(c=>c.id===(id||d.active)),included=[],skipped=[];
  const replace=s=>s.replace(/\{\{user\}\}/g,d.user||'你').replace(/\{\{char\}\}/g,c?.name||'我');
- return {system:replace([d.user?'用户名字：'+d.user:'',c?'角色名字：'+c.name:'',c?.system,c?.world].filter(Boolean).join('\n\n')),greeting:replace(c?.greeting||'')};
-},mount(root){
- let d=read();const form=el('div');form.className='chat-next-settings-form';root.replaceChildren(form);
- const status=el('p');status.setAttribute('role','status');
- const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(d));status.textContent='已保存到本机，新消息会使用当前角色与世界书。';return true}catch(_){status.textContent='保存失败，本机空间不足。';return false}};
+ if(!c)return {system:d.user?'用户名字：'+d.user:'',greeting:'',included,skipped};
+ const recent=array(messages).slice(-c.scanDepth).map(m=>typeof m==='string'?m:[m?.content,...array(m?.attachments).map(a=>a?.text||'')].filter(x=>typeof x==='string').join('\n')).join('\n').toLocaleLowerCase();
+ let used=0;const lore=[];
+ for(const item of c.lore){if(!item.enabled||!item.text.trim())continue;const keys=item.keywords.split(/[,，\n]/).map(k=>k.trim().toLocaleLowerCase()).filter(Boolean);const match=item.always||(keys.length>0&&(item.mode==='all'?keys.every(k=>recent.includes(k)):keys.some(k=>recent.includes(k))));if(!match)continue;if(used+item.text.length>12000){skipped.push(item.title);continue}used+=item.text.length;lore.push('['+item.title+']\n'+item.text);included.push(item.title)}
+ const chosenSummaries=[];let summarySize=0;for(const h of c.chapters){if(!h.include||!h.summary.trim())continue;if(summarySize+h.summary.length>8000){skipped.push('章节摘要：'+h.title);continue}summarySize+=h.summary.length;chosenSummaries.push('['+h.title+'] '+h.summary)}const summaries=chosenSummaries.join('\n');
+ const openings=[c.greeting,...c.greetings];const index=Number.isInteger(options.greetingIndex)?options.greetingIndex:c.greetingIndex;
+ return {system:replace([d.user?'用户名字：'+d.user:'','角色名字：'+c.name,c.system,c.world,lore.length?'触发的世界书：\n'+lore.join('\n\n'):'',summaries?'已选择的章节摘要：\n'+summaries:''].filter(Boolean).join('\n\n')),greeting:replace(openings[index]||c.greeting||''),included,skipped};
+}
+const el=(t,text)=>{const n=document.createElement(t);if(text!==undefined)n.textContent=text;return n};
+function dispose(){serial++;controllers.forEach(c=>c.abort());controllers.clear()}
+function mount(root){
+ dispose();const generation=serial;let d=read();const form=el('div');form.className='chat-next-settings-form library-settings';root.replaceChildren(form);const status=el('p');status.setAttribute('role','status');
+ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(clean(d)));status.textContent='书房已保存';return true}catch(e){status.textContent='保存失败：'+e.message;return false}};
+ const redraw=()=>{if(save())mount(root)};
  const button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b};
- const field=(title,value,fn,multi=false)=>{const label=el('label');label.className='chat-next-field';const input=el(multi?'textarea':'input');input.value=value;input.maxLength=multi?12000:80;if(multi)input.rows=5;input.oninput=()=>fn(input.value);label.append(el('span',title),input);form.append(label)};
- field('你的名字 · 用于 {{user}}',d.user,v=>{d.user=v});
- window.YanyaAssets?.avatarControl(form,{role:'user',name:'你的头像'});
- const select=el('select');select.className='chat-next-input-select';const none=el('option','不使用角色');none.value='';select.append(none);
- d.cards.forEach(c=>{const o=el('option',c.name);o.value=c.id;select.append(o)});select.value=d.active;
- select.onchange=()=>{d.active=select.value;if(persist())this.mount(root)};form.append(select);
- form.append(button('添加角色',()=>{d.active=Date.now().toString(36)+Math.random().toString(36).slice(2);d.cards.push({id:d.active,name:'新角色',system:'',world:'',greeting:''});if(persist())this.mount(root)}));
+ const section=(title,expanded=false)=>{const box=el('details');box.className='library-section';box.open=expanded;box.append(el('summary',title));form.append(box);return box};
+ const field=(host,title,value,set,{multi=false,max=12000}={})=>{const label=el('label');label.className='chat-next-field';const input=el(multi?'textarea':'input');input.value=value;input.maxLength=max;if(multi)input.rows=4;input.oninput=()=>set(input.value);label.append(el('span',title),input);host.append(label);return input};
+ const check=(host,label,value,set)=>{const row=el('label');row.className='theme-check';const input=el('input');input.type='checkbox';input.checked=value;input.onchange=()=>set(input.checked);row.append(input,el('span',label));host.append(row)};
+ field(form,'你的名字 · {{user}}',d.user,v=>d.user=v,{max:80});window.YanyaAssets?.avatarControl(form,{role:'user',name:'你的头像'});
+ const pick=el('select');pick.className='chat-next-input-select';pick.setAttribute('aria-label','选择书房角色');const none=el('option','不使用角色');none.value='';pick.append(none);d.cards.forEach(c=>{const o=el('option',c.name);o.value=c.id;pick.append(o)});pick.value=d.active;pick.onchange=()=>{d.active=pick.value;redraw()};form.append(pick,button('添加角色',()=>{if(d.cards.length>=100){status.textContent='最多 100 个角色';return}const c=clean({cards:[{id:uid(),name:'新角色'}]}).cards[0];d.cards.push(c);d.active=c.id;redraw()}));
  const c=d.cards.find(c=>c.id===d.active);
- if(c){window.YanyaAssets?.avatarControl(form,{role:'assistant',id:c.id,name:c.name+'的头像'});field('角色名字 · {{char}}',c.name,v=>c.name=v);field('角色设定',c.system,v=>c.system=v,true);field('世界书 · 每次聊天随上下文发送',c.world,v=>c.world=v,true);field('开场白 · 新建对话时使用',c.greeting,v=>c.greeting=v,true);}
- form.append(button('保存书房',()=>{if(persist())this.mount(root)}));
- if(c)form.append(button('删除当前角色',()=>{if(!confirm('确定删除角色「'+c.name+'」？'))return;d.cards=d.cards.filter(x=>x.id!==c.id);d.active='';if(persist())this.mount(root)}));
- form.append(button('导出书房',()=>{const u=URL.createObjectURL(new Blob([JSON.stringify({format:'yanya-library-v1',...d},null,2)],{type:'application/json'}));const a=el('a');a.href=u;a.download='砚芽-书房.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}));
- const file=el('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
- file.onchange=async()=>{try{const f=file.files[0];if(!f)return;if(f.size>4*1024*1024)throw Error('文件超过 4 MB');const raw=JSON.parse(await f.text());if(raw.format!=='yanya-library-v1'||!Array.isArray(raw.cards))throw Error('不是砚芽书房备份');const next=clean(raw);if(!confirm('将替换书房，共 '+next.cards.length+' 个角色。请先导出当前书房。'))return;d=next;if(persist())this.mount(root)}catch(e){status.textContent='导入失败：'+e.message}finally{file.value=''}};
- form.append(button('导入书房',()=>file.click()),file,el('p','角色与世界书独立保存在本机；切换角色不会删除聊天。开场白用于新建对话，支持 {{user}} 和 {{char}}。'),status);
-}};
+ if(c){
+  const basics=section('角色与固定设定',true);window.YanyaAssets?.avatarControl(basics,{role:'assistant',id:c.id,name:c.name+'的头像'});field(basics,'角色名字 · {{char}}',c.name,v=>c.name=v,{max:80});field(basics,'角色设定',c.system,v=>c.system=v,{multi:true});field(basics,'固定世界设定 · 每次发送',c.world,v=>c.world=v,{multi:true});
+  const greetings=section('开场白 · '+(1+c.greetings.length)+' 个');field(greetings,'默认开场白',c.greeting,v=>c.greeting=v,{multi:true});c.greetings.forEach((g,i)=>{const row=el('div');field(row,'备选 '+(i+1),g,v=>c.greetings[i]=v,{multi:true});row.append(button('删除此开场',()=>{c.greetings.splice(i,1);c.greetingIndex=0;redraw()}));greetings.append(row)});
+  const selection=el('select');selection.className='chat-next-input-select';selection.setAttribute('aria-label','新对话使用的开场');[c.greeting,...c.greetings].forEach((g,i)=>{const o=el('option',(i===0?'默认':'备选 '+i)+' · '+(g.replace(/\s+/g,' ').slice(0,30)||'空'));o.value=String(i);selection.append(o)});selection.value=String(c.greetingIndex);selection.onchange=()=>c.greetingIndex=Number(selection.value);greetings.append(el('span','新对话使用'),selection,button('添加备选开场',()=>{if(c.greetings.length>=12){status.textContent='最多 12 个备选开场';return}c.greetings.push('');redraw()}));
+  const world=section('世界书条目 · '+c.lore.length);world.append(el('p','关键词用逗号分隔，不区分大小写。按最近消息触发，停用条目不发送；固定设定仍每次发送。触发条目总正文最多 12000 字，按列表顺序装入。'));
+  const depth=field(world,'扫描最近多少条消息 · 1–20',String(c.scanDepth),v=>c.scanDepth=Math.max(1,Math.min(20,Math.floor(Number(v)||6))),{max:2});depth.type='number';depth.min=1;depth.max=20;
+  c.lore.forEach((l,i)=>{const box=el('details');box.className='library-entry';box.append(el('summary',l.title));field(box,'条目标题',l.title,v=>l.title=v,{max:80});field(box,'正文',l.text,v=>l.text=v,{multi:true,max:6000});field(box,'关键词 · 逗号分隔',l.keywords,v=>l.keywords=v,{max:500});check(box,'启用',l.enabled,v=>l.enabled=v);check(box,'常驻 · 无需关键词',l.always,v=>l.always=v);const mode=el('select');mode.className='chat-next-input-select';[['any','命中任意关键词'],['all','命中全部关键词']].forEach(([v,text])=>{const o=el('option',text);o.value=v;mode.append(o)});mode.value=l.mode;mode.onchange=()=>l.mode=mode.value;box.append(mode,button('上移',()=>{if(i>0){[c.lore[i-1],c.lore[i]]=[c.lore[i],c.lore[i-1]];redraw()}}),button('删除条目',()=>{if(confirm('删除这条世界书？')){c.lore.splice(i,1);redraw()}}));world.append(box)});
+  world.append(button('添加世界书条目',()=>{if(c.lore.length>=80){status.textContent='最多 80 条';return}c.lore.push({id:uid(),title:'新设定',text:'',keywords:'',mode:'any',always:false,enabled:true});redraw()}));
+  const preview=el('textarea');preview.placeholder='输入一句话，检查会触发哪些条目';preview.rows=2;preview.setAttribute('aria-label','世界书触发测试');const result=el('p');world.append(preview,button('保存并测试触发',()=>{if(!save())return;const ctx=context(c.id,[{content:preview.value}]);result.textContent='已触发：'+(ctx.included.join('、')||'无')+(ctx.skipped.length?'；超出预算未加入：'+ctx.skipped.join('、'):'')}),result);
+  const chapters=section('章节与摘要 · '+c.chapters.length);chapters.append(el('p','章节正文仅保存在书房；勾选后只有摘要随聊天发送，摘要正文总计最多 8000 字。自动摘要使用当前聊天接口，可能消耗接口额度。'));
+  c.chapters.forEach((h,i)=>{const box=el('details');box.className='library-entry';box.append(el('summary',h.title));field(box,'章节标题',h.title,v=>h.title=v,{max:100});field(box,'章节正文',h.text,v=>h.text=v,{multi:true,max:30000});const summary=field(box,'一句话摘要',h.summary,v=>h.summary=v,{multi:true,max:500});check(box,'将此摘要带入聊天',h.include,v=>h.include=v);const generate=button('生成一句话摘要',async()=>{if(!h.text.trim()){status.textContent='请先写章节正文';return}const controller=new AbortController();controllers.add(controller);generate.disabled=true;try{status.textContent='正在生成摘要……';const text=await window.YanyaChat.complete('用一句话概括这段章节的已发生情节，保留关键人物和结果，不添加新情节。只输出摘要，最多 180 字。',h.text,controller.signal);if(generation!==serial||!form.isConnected)return;h.summary=text.slice(0,500);summary.value=h.summary;save()}catch(e){if(generation===serial)status.textContent=e.message}finally{controllers.delete(controller);generate.disabled=false}});box.append(generate,button('删除章节',()=>{if(confirm('删除章节及摘要？')){c.chapters.splice(i,1);redraw()}}));chapters.append(box)});
+  chapters.append(button('添加章节',()=>{if(c.chapters.length>=40){status.textContent='最多 40 个章节';return}c.chapters.push({id:uid(),title:'新章节',text:'',summary:'',include:false});redraw()}));
+ }
+ form.append(button('保存书房',redraw));if(c)form.append(button('删除当前角色',()=>{if(!confirm('删除「'+c.name+'」及书房条目？'))return;d.cards=d.cards.filter(x=>x.id!==c.id);d.active='';redraw()}));
+ form.append(button('导出书房',()=>{if(!save())return;const u=URL.createObjectURL(new Blob([JSON.stringify({format:'yanya-library-v1',...clean(d)},null,2)],{type:'application/json'}));const a=el('a');a.href=u;a.download='砚芽-书房.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}));
+ const file=el('input');file.type='file';file.accept='.json,application/json';file.hidden=true;file.onchange=async()=>{try{const f=file.files?.[0];if(!f)return;if(f.size>12*1024*1024)throw Error('书房文件超过 12 MB');const raw=JSON.parse(await f.text());if(generation!==serial)return;if(raw.format!=='yanya-library-v1'||!Array.isArray(raw.cards))throw Error('不是书房备份');const next=clean(raw);if(!confirm('替换书房，共 '+next.cards.length+' 个角色？建议先导出当前书房。'))return;d=next;redraw()}catch(e){status.textContent='导入失败：'+e.message}finally{file.value=''}};
+ form.append(button('导入书房',()=>file.click()),file,status);
+}
+window.YanyaLibrary={normalize:clean,read,context,characterId:id=>id||read().active,characters:()=>read().cards,characterName(id){const d=read();return d.cards.find(c=>c.id===(id||d.active))?.name||''},mount,dispose};
 })();

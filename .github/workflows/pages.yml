@@ -40,6 +40,7 @@ jobs:
           node --check branches.js
           node --check stickers.js
           node --check voice-notes.js
+          node --check creation.js
           node tests/chat-integration.cjs
           node tests/mcp-data.cjs
           node tests/voice.cjs
@@ -50,6 +51,8 @@ jobs:
           node tests/branches-media.cjs
           node tests/chat-branches.cjs
           node tests/voice-notes.cjs
+          node tests/library-creation.cjs
+          node tests/completion.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site

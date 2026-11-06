@@ -12,6 +12,7 @@
     oracle: { title: "签庭", kicker: "THE ORACLE GARDEN" },
     library: { title: "藏书楼", kicker: "LIBRARY OF WORLDS" },
     workshop: { title: "天机台", kicker: "ARCANE WORKSHOP" },
+    creation:{title:"创作角",kicker:"STORY ATELIER"},
     theme: {title:"外观",kicker:"APPEARANCE"},
     garden: { title: "灵圃", kicker: "A GARDEN IN GROWTH" }
   };
@@ -104,6 +105,7 @@
   });
   applyPeriod(window.YanyaTheme?document.body.dataset.period:preferredPeriod());
   window.addEventListener("yanya-theme-change",e=>applyPeriod(e.detail.period));
+  $("#creationOpen")?.addEventListener("click",()=>openPanel("creation"));
   $("#themeOpen")?.addEventListener("click",()=>openPanel("theme"));
   dateLabel();
 
@@ -187,6 +189,7 @@
 
   function renderLibrary() {
     window.YanyaLibrary.mount(content);
+    content.append(button("打开创作角",()=>openPanel("creation")));
   }
 
   function renderWorkshop() {
@@ -222,6 +225,8 @@
     const location = LOCATIONS[id];
     if (!location) return;
     if (!currentLocation) previousFocus = document.activeElement;
+    if(currentLocation==="creation")window.YanyaCreation?.dispose();
+    if(currentLocation==="library")window.YanyaLibrary?.dispose();
     if(currentLocation==="heart" && id!=="heart")window.YanyaChat?.dispose?.();
     currentLocation = id;
     panel.classList.toggle("is-chat",id==="heart");
@@ -235,6 +240,7 @@
       case "library": renderLibrary(); break;
       case "workshop": renderWorkshop(); break;
       case "garden": renderGarden(); break;
+      case "creation":window.YanyaCreation?.mount(content);break;
       case "theme":window.YanyaTheme?.mount(content);break;
     }
     scrim.hidden = false;
@@ -246,6 +252,8 @@
   function closePanel() {
     if (!currentLocation) return;
     if(currentLocation==="heart")window.YanyaChat?.dispose?.();
+    if(currentLocation==="creation")window.YanyaCreation?.dispose();
+    if(currentLocation==="library")window.YanyaLibrary?.dispose();
     currentLocation = null;
     panel.classList.remove("is-open","is-chat");
     panel.setAttribute("aria-hidden", "true");
