@@ -5,6 +5,5 @@
 .yanya-voice-card button{cursor:pointer}.yanya-voice-card button:disabled{opacity:.45}.yanya-voice-actions{display:flex;gap:8px;flex-wrap:wrap}.yanya-voice-actions button:last-child{background:#914c50}
 .yanya-voice-transcript{min-height:100px;max-height:40dvh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:14px}.yanya-voice-transcript b{color:#bbdbad}
 .chat-next> .chat-next-sheet-actions{flex-wrap:wrap;padding:4px 0}.chat-next> .chat-next-sheet-actions button{min-height:36px}
-.panel.is-chat .chat-next{grid-template-rows:auto auto minmax(0,1fr) auto auto}
 @media(max-width:480px){.yanya-voice-card{padding:18px;gap:10px}.yanya-voice-actions button{flex:1 1 40%;font-size:13px}}
 .chat-next-message-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}.chat-next-message-actions button{font:inherit;font-size:11px;color:var(--c-text);background:var(--c-soft);border:1px solid var(--c-line);border-radius:8px;padding:4px 8px;cursor:pointer}.chat-next-thread{flex-wrap:wrap}

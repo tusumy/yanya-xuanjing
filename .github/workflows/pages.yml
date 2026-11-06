@@ -53,6 +53,7 @@ jobs:
           node tests/voice-notes.cjs
           node tests/library-creation.cjs
           node tests/completion.cjs
+          node tests/chat-layout.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site

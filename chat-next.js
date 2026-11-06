@@ -123,16 +123,18 @@ function mount(content){
   addButton.setAttribute("aria-label","新建对话");
   const settingsButton=btn("⚙",()=>openDrawer("settings"),"chat-next-icon");
   settingsButton.setAttribute("aria-label","管理接口");
-  toolbar.append(historyButton,providerSelect,modelSelect,addButton,settingsButton);
-  const voiceActions=node("div","chat-next-sheet-actions");
+  const identity=node("div","chat-next-identity");
+  const identityName=node("strong","","新对话"),identityModel=node("small","","");identity.append(identityName,identityModel);
   const roleSelect=node("select","chat-next-input-select");roleSelect.setAttribute("aria-label","当前对话角色");
   const defaultRole=node("option","","使用书房当前角色");defaultRole.value="";roleSelect.append(defaultRole);
   (window.YanyaLibrary?.characters()||[]).forEach(c=>{const o=node("option","",c.name);o.value=c.id;roleSelect.append(o)});
-  roleSelect.addEventListener("change",()=>{if(pending||window.YanyaVoice?.isCalling())return;selectedThread().characterId=roleSelect.value;persist();setStatus("已切换本段对话角色。");});
-  const callButton=btn("☎ 通话",()=>window.YanyaVoice?.call(voiceAdapter));
+  roleSelect.addEventListener("change",()=>{if(pending||window.YanyaVoice?.isCalling())return;selectedThread().characterId=roleSelect.value;persist();renderMessages();setStatus("已切换本段对话角色。");});
+  const callButton=btn("☎",()=>window.YanyaVoice?.call(voiceAdapter));
+  callButton.setAttribute("aria-label","语音通话");callButton.className="chat-next-icon";
   const dictation=btn("🎙 语音输入",()=>window.YanyaVoice?.dictate(text=>{input.value=(input.value+" "+text).trim();input.focus()},setStatus));
-  const moreButton=btn("更多",()=>openDrawer("menu"));
-  voiceActions.append(roleSelect,callButton,moreButton);
+  const moreButton=btn("⋯",()=>openDrawer("menu"),"chat-next-icon");moreButton.setAttribute("aria-label","聊天设置与工具");
+  const closeChat=btn("×",()=>document.getElementById("panelClose")?.click(),"chat-next-icon");closeChat.setAttribute("aria-label","返回主页");
+  toolbar.append(historyButton,identity,callButton,moreButton,closeChat);
   const area=node("div","chat-next-messages");
   area.setAttribute("role","log");
   area.setAttribute("aria-live","polite");
@@ -140,9 +142,11 @@ function mount(content){
   status.setAttribute("role","status");
   const compose=node("div","chat-next-composer");
   const input=node("textarea","chat-next-input");
-  input.rows=2;input.maxLength=MAX_TEXT;
+  input.rows=1;input.maxLength=MAX_TEXT;
   input.placeholder="发消息……";
   input.setAttribute("aria-label","聊天输入");
+  const resizeInput=()=>{input.style.height="auto";input.style.height=Math.min(128,Math.max(38,input.scrollHeight||38))+"px"};
+  input.addEventListener("input",resizeInput);
   const actionArea=node("div","chat-next-composer-actions");
   const retryButton=btn("重试",()=>send(true),"chat-next-retry");
   const sendButton=btn("发送",()=>send(false),"chat-next-send");
@@ -161,7 +165,7 @@ function mount(content){
     }catch(e){if(!disposed)setStatus(e.message,true)}finally{attaching=false;attachButton.disabled=false}
   });
   const saveDraft=()=>drafts.set(current,{text:input.value,attachments:draftAttachments});
-  const loadDraft=()=>{const d=drafts.get(current);input.value=d?.text||"";draftAttachments=d?.attachments||[];renderDraft()};
+  const loadDraft=()=>{const d=drafts.get(current);input.value=d?.text||"";draftAttachments=d?.attachments||[];renderDraft();resizeInput()};
   const stopButton=btn("停止",()=>pending?.abort(),"chat-next-stop");
   stopButton.hidden=true;
   const recordButton=btn("录音",()=>{
@@ -170,8 +174,9 @@ function mount(content){
     window.YanyaNotes?.record({onReady:note=>{if(disposed||current!==target)throw Error("对话已切换，请重新录音");if(draftAttachments.length>=4)throw Error("待发送附件已满");draftAttachments.push(note);renderDraft();},
       transcribe:async(blob,model,signal)=>{const url=endpoint(p.url,"chat").replace(/chat\/completions$/,"audio/transcriptions");const form=new FormData();form.append("file",blob,blob.type.includes("mp4")?"voice.m4a":"voice.webm");form.append("model",model);const headers={Accept:"application/json"};const key=keyGet(p.id);if(key)headers.Authorization="Bearer "+key;const response=await fetch(url,{method:"POST",credentials:"omit",headers,body:form,signal});const data=await readJSON(response);const text=data?.text||data?.transcript;if(typeof text!=="string"||!text.trim())throw Error("接口没有返回转写文字");return text;}});
   },"chat-next-attach");
-  actionArea.append(recordButton,attachButton,retryButton,sendButton,stopButton);
-  const composeBody=node("div","chat-next-compose-body");composeBody.append(attachmentTray,input,attachmentsInput);compose.append(composeBody,actionArea);
+  const plusButton=btn("＋",()=>openDrawer("compose"),"chat-next-plus");plusButton.setAttribute("aria-label","添加附件、录音或表情");
+  actionArea.append(sendButton,stopButton);
+  const composeBody=node("div","chat-next-compose-body");composeBody.append(attachmentTray,input,attachmentsInput);compose.append(plusButton,composeBody,actionArea);
   const shade=node("div","chat-next-overlay");
   shade.hidden=true;
   const sheet=node("div","chat-next-sheet");
@@ -184,7 +189,7 @@ function mount(content){
   sheet.append(sheetHead,sheetBody);
   shade.append(sheet);
   shade.addEventListener("click",e=>{if(e.target===shade)openDrawer("")});
-  root.append(toolbar,voiceActions,area,status,compose,shade);
+  root.append(toolbar,area,status,compose,shade);
   content.replaceChildren(root);
 
   const persist=()=>{
@@ -213,10 +218,12 @@ function mount(content){
         try{await navigator.clipboard.writeText(m.content);copy.textContent="已复制"}
         catch(_){copy.textContent="复制失败"}
       },"chat-next-copy");
-      box.append(copy,btn("朗读",()=>window.YanyaVoice?.speak(m.content).catch(e=>setStatus(e.message,true)),"chat-next-copy"));
+      box._copy=copy;
     }
     if(!Number.isInteger(index)){area.append(box);return content;}
+    const actionDisclosure=node("details","chat-next-message-menu");const actionSummary=node("summary","","⋯");actionSummary.setAttribute("aria-label","消息操作");actionDisclosure.append(actionSummary);
     const actions=node("div","chat-next-message-actions");
+    if(box._copy)actions.append(box._copy,btn("朗读",()=>window.YanyaVoice?.speak(m.content).catch(e=>setStatus(e.message,true))));
     const editable=()=>!pending&&!window.YanyaVoice?.isCalling();
     actions.append(btn("编辑",()=>{
       if(!editable())return;
@@ -242,7 +249,7 @@ function mount(content){
       if(index===selectedThread().messages.length-1)actions.append(btn("重新生成",()=>{if(!editable())return;if(variants.length>=12){setStatus("已有 12 个版本，请从这里分支继续。",true);return}send(true,null,{target:m});}));
       const generate=btn("保存语音条",async()=>{if(!editable())return;const t=selectedThread(),text=m.content,version=m.activeVariant;if(!text.trim())return;const controller=new AbortController();mediaControllers.add(controller);generate.disabled=true;try{setStatus("正在生成并保存语音，可能消耗语音服务额度……");const audio=await window.YanyaVoice.generate(text,controller.signal);if(disposed||controller.signal.aborted||!t.messages.includes(m)||m.content!==text||m.activeVariant!==version)return;const rest=(m.attachments||[]).filter(a=>a.kind!=="audio");if(rest.length>=4)throw Error("此消息附件已满");m.attachments=[...rest,audio];if(m.variants?.length)m.variants[m.activeVariant||0]={content:m.content,at:m.at,attachments:m.attachments};const ok=persist();renderMessages();setStatus(ok?"语音已保存，可播放或下载。":"本机空间不足，声音仅保留在当前页面，请先下载。",!ok);}catch(e){if(!disposed)setStatus(e.message,true)}finally{mediaControllers.delete(controller);generate.disabled=false}});actions.append(generate);
     }
-    box.append(actions);area.append(box);return content;
+    actionDisclosure.append(actions);box.append(actionDisclosure);area.append(box);return content;
   };
   const renderMessages=()=>{
     window.YanyaAttachments?.stopAudio();area.replaceChildren();
@@ -255,6 +262,7 @@ function mount(content){
     }else t.messages.forEach(bubble);
     (t.calls||[]).forEach(c=>area.append(node("div","chat-next-status","☎ 通话记录 · "+Math.floor(c.duration/60)+"分"+c.duration%60+"秒 · "+new Date(c.at).toLocaleString())));
     retryButton.hidden=t.messages.at(-1)?.role!=="user";
+    identityName.textContent=window.YanyaLibrary?.characterName(t.characterId)||t.title||"新对话";
     scrollEnd();
   };
   const renderProviders=()=>{
@@ -274,12 +282,13 @@ function mount(content){
     });
     modelSelect.value=p.model||"";
     modelSelect.title=p.model||"在接口管理中拉取或填写模型";
+    identityModel.textContent=p.model||"未配置模型";
   };
   const setBusy=bool=>{
     sendButton.hidden=bool;stopButton.hidden=!bool;
     input.disabled=bool;retryButton.disabled=bool;
     providerSelect.disabled=bool;modelSelect.disabled=bool;
-    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;roleSelect.disabled=bool;attachButton.disabled=bool;recordButton.disabled=bool;
+    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;roleSelect.disabled=bool;attachButton.disabled=bool;recordButton.disabled=bool;plusButton.disabled=bool;
   };
   const forkAt=index=>{
     if(pending||attaching||window.YanyaVoice?.isCalling())return false;
@@ -367,7 +376,13 @@ function mount(content){
     sheetTitle.textContent=kind==="history"?"对话记录":"接口与模型";
     if(kind==="history")buildHistory();
     if(kind==="settings")buildSettings();
-    if(kind==="menu"){sheetTitle.textContent="聊天工具";const menu=node("div","chat-menu-grid");menu.append(dictation,btn("表情包架",()=>openDrawer("stickers")),btn("语音设置",()=>window.YanyaVoice?.settings()),btn("书房",()=>openDrawer("library")),btn("创作角",()=>openDrawer("creation")),btn("MCP 工具",()=>openDrawer("mcp")),btn("数据备份",()=>openDrawer("data")),btn("外观",()=>openDrawer("theme")));sheetBody.append(menu)}
+    if(kind==="compose"){sheetTitle.textContent="添加到消息";const menu=node("div","chat-menu-grid");
+      const pickFile=btn("图片 / 文件",()=>{openDrawer("");attachButton.click()});
+      const record=btn("录一条语音",()=>{openDrawer("");recordButton.click()});
+      const speech=btn("语音输入",()=>{openDrawer("");dictation.click()});
+      menu.append(pickFile,record,btn("表情包",()=>openDrawer("stickers")),speech);sheetBody.append(menu);if(selectedThread().messages.at(-1)?.role==="user")sheetBody.append(retryButton);
+    }
+    if(kind==="menu"){sheetTitle.textContent="聊天设置";const configuration=node("div","chat-next-settings-form");configuration.append(section("当前对话角色",roleSelect),section("聊天接口",providerSelect),section("模型",modelSelect),btn("新建对话",newThread),btn("管理接口与模型",()=>openDrawer("settings")));sheetBody.append(configuration);const menu=node("div","chat-menu-grid");menu.append(dictation,btn("表情包架",()=>openDrawer("stickers")),btn("语音设置",()=>window.YanyaVoice?.settings()),btn("书房",()=>openDrawer("library")),btn("创作角",()=>openDrawer("creation")),btn("MCP 工具",()=>openDrawer("mcp")),btn("数据备份",()=>openDrawer("data")),btn("外观",()=>openDrawer("theme")));sheetBody.append(menu)}
     if(kind==="library"){sheetTitle.textContent="书房";window.YanyaLibrary?.mount(sheetBody)}
     if(kind==="creation"){sheetTitle.textContent="创作角";window.YanyaCreation?.mount(sheetBody)}
     if(kind==="stickers"){sheetTitle.textContent="表情包架";window.YanyaStickers?.mount(sheetBody,attachment=>{if(pending||window.YanyaVoice?.isCalling())return;if(draftAttachments.length>=4){setStatus("每条消息最多 4 个附件",true);return}draftAttachments.push(attachment);renderDraft();openDrawer("");})}
@@ -549,7 +564,7 @@ function mount(content){
     }else{
       const attachments=spokenText===null?draftAttachments:[];
       if(!append(t,"user",text,attachments))return;
-      if(spokenText===null){input.value="";draftAttachments=[];drafts.delete(current);renderDraft();}
+      if(spokenText===null){input.value="";draftAttachments=[];drafts.delete(current);renderDraft();resizeInput();}
     }
     renderMessages();
     const callState=window.YanyaVoice?.isCalling()?"当前正在语音通话中，请使用自然、适合朗读的口语回复。":t.calls?.length?"最近一次语音通话已挂断，当前为文字聊天。":"";
@@ -668,7 +683,7 @@ function mount(content){
     send:text=>send(false,text),
     stop:()=>pending?.abort(),
     record(duration){const t=selectedThread();(t.calls||(t.calls=[])).push({at:timestamp(),duration});t.calls=t.calls.slice(-100);persist();renderMessages()},
-    lock(value){recordButton.disabled=value;attachButton.disabled=value;roleSelect.disabled=value;historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
+    lock(value){plusButton.disabled=value;recordButton.disabled=value;attachButton.disabled=value;roleSelect.disabled=value;historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
   };
   input.addEventListener("keydown",e=>{
     if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){
