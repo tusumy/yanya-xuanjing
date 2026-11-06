@@ -36,6 +36,7 @@ const message=m=>m&&["user","assistant"].includes(m.role)&&typeof m.content==="s
 const thread=t=>{
   if(!t||!Array.isArray(t.messages))return null;
   return {id:typeof t.id==="string"&&t.id.length<100?t.id:uid(),
+    characterId:typeof t.characterId==="string"?t.characterId:"",
     title:typeof t.title==="string"?t.title.slice(0,50):"新对话",
     updated:typeof t.updated==="string"?t.updated:timestamp(),
     calls:Array.isArray(t.calls)?t.calls.filter(c=>c&&typeof c==="object").slice(-100).map(c=>({at:String(c.at||""),duration:Number(c.duration)||0})):[],
@@ -69,7 +70,7 @@ const readJSON=async response=>{
   if(!response.ok)throw Error("HTTP "+response.status+"："+(data?.error?.message||data?.message||"请求失败"));
   return data;
 };
-const bookContext=()=>window.YanyaLibrary?.context()||{system:"",greeting:""};
+const bookContext=id=>window.YanyaLibrary?.context(id)||{system:"",greeting:""};
 const output=x=>{
   const from=c=>{
     if(typeof c==="string")return c;
@@ -123,9 +124,13 @@ function mount(content){
   settingsButton.setAttribute("aria-label","管理接口");
   toolbar.append(historyButton,providerSelect,modelSelect,addButton,settingsButton);
   const voiceActions=node("div","chat-next-sheet-actions");
+  const roleSelect=node("select","chat-next-input-select");roleSelect.setAttribute("aria-label","当前对话角色");
+  const defaultRole=node("option","","使用书房当前角色");defaultRole.value="";roleSelect.append(defaultRole);
+  (window.YanyaLibrary?.characters()||[]).forEach(c=>{const o=node("option","",c.name);o.value=c.id;roleSelect.append(o)});
+  roleSelect.addEventListener("change",()=>{if(pending||window.YanyaVoice?.isCalling())return;selectedThread().characterId=roleSelect.value;persist();setStatus("已切换本段对话角色。");});
   const callButton=btn("☎ 通话",()=>window.YanyaVoice?.call(voiceAdapter));
   const dictation=btn("🎙 语音输入",()=>window.YanyaVoice?.dictate(text=>{input.value=(input.value+" "+text).trim();input.focus()},setStatus));
-  voiceActions.append(callButton,dictation,btn("语音设置",()=>window.YanyaVoice?.settings()));
+  voiceActions.append(roleSelect,callButton,dictation,btn("语音设置",()=>window.YanyaVoice?.settings()),btn("MCP 工具",()=>openDrawer("mcp")),btn("数据备份",()=>openDrawer("data")));
   const area=node("div","chat-next-messages");
   area.setAttribute("role","log");
   area.setAttribute("aria-live","polite");
@@ -170,7 +175,7 @@ function mount(content){
     status.hidden=!text;
   };
   const scrollEnd=()=>{area.scrollTop=area.scrollHeight};
-  const bubble=(m)=>{
+  const bubble=(m,index)=>{
     const box=node("article","chat-next-message "+(m.role==="user"?"mine":"theirs"));
     const content=node("div","chat-next-bubble",m.content);
     box.append(content);
@@ -181,11 +186,33 @@ function mount(content){
       },"chat-next-copy");
       box.append(copy,btn("朗读",()=>window.YanyaVoice?.speak(m.content).catch(e=>setStatus(e.message,true)),"chat-next-copy"));
     }
-    area.append(box);return content;
+    if(!Number.isInteger(index)){area.append(box);return content;}
+    const actions=node("div","chat-next-message-actions");
+    const editable=()=>!pending&&!window.YanyaVoice?.isCalling();
+    actions.append(btn("编辑",()=>{
+      if(!editable())return;
+      const text=prompt("编辑消息。已有后续消息会保留；如需重答，请点重新生成。",m.content);
+      if(text===null||!text.trim())return;
+      m.content=text.slice(0,MAX_TEXT);selectedThread().updated=timestamp();persist();renderMessages();
+    }),btn("删除",()=>{
+      if(!editable()||!confirm("删除这条消息？"))return;
+      selectedThread().messages.splice(index,1);persist();renderMessages();
+    }),btn("收藏",()=>{
+      try{const key=P+"memories.v1",saved=read(key,[]);const list=Array.isArray(saved)?saved:[];
+        if(!list.some(x=>x.text===m.content))list.unshift({id:uid(),text:m.content,type:"聊天收藏",created:timestamp()});
+        if(!save(key,list.slice(0,150)))throw Error("本机空间不足");setStatus("已收藏到星阁。");
+      }catch(e){setStatus(e.message,true)}
+    }));
+    if(m.role==="assistant"&&index===selectedThread().messages.length-1)actions.append(btn("重新生成",()=>{
+      if(!editable()||!confirm("移除当前回复并重新生成？"))return;
+      const t=selectedThread();if(t.messages[index-1]?.role!=="user"){setStatus("前一条需要是用户消息。",true);return}
+      t.messages.pop();persist();renderMessages();send(true);
+    }));
+    box.append(actions);area.append(box);return content;
   };
   const renderMessages=()=>{
     area.replaceChildren();
-    const t=selectedThread();
+    const t=selectedThread();roleSelect.value=t.characterId||"";
     if(!t.messages.length){
       const empty=node("div","chat-next-empty");
       empty.append(node("span","","✧"),node("strong","","岛心有话说"),
@@ -218,13 +245,13 @@ function mount(content){
     sendButton.hidden=bool;stopButton.hidden=!bool;
     input.disabled=bool;retryButton.disabled=bool;
     providerSelect.disabled=bool;modelSelect.disabled=bool;
-    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;
+    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;roleSelect.disabled=bool;
   };
   const newThread=()=>{
     if(pending)return;
-    const t={id:uid(),title:"新对话",updated:timestamp(),messages:[]};
+    const t={id:uid(),characterId:roleSelect.value||"",title:"新对话",updated:timestamp(),messages:[]};
     threads.unshift(t);if(threads.length>MAX_THREADS)threads.length=MAX_THREADS;
-    const greeting=bookContext().greeting;
+    const greeting=bookContext(t.characterId).greeting;
     if(greeting)t.messages.push({role:"assistant",content:greeting,at:timestamp()});
     current=t.id;persist();renderMessages();openDrawer("");input.focus();
   };
@@ -290,6 +317,8 @@ function mount(content){
     sheetTitle.textContent=kind==="history"?"对话记录":"接口与模型";
     if(kind==="history")buildHistory();
     if(kind==="settings")buildSettings();
+    if(kind==="data"){sheetTitle.textContent="数据备份与旧版迁移";window.YanyaData?.mount(sheetBody)}
+    if(kind==="mcp"){sheetTitle.textContent="MCP 外部工具";window.YanyaMCP?.mount(sheetBody)}
   };
   function buildHistory(){
     const upper=node("div","chat-next-sheet-actions");
@@ -308,9 +337,12 @@ function mount(content){
         if(current===t.id)current=threads[0].id;
         persist();renderMessages();buildHistoryFresh();
       },"chat-next-delete");
-      row.append(label,del);list.append(row);
+      const rename=btn("改名",()=>{const title=prompt("对话名字",t.title);if(title?.trim()){t.title=title.trim().slice(0,50);persist();buildHistoryFresh()}});
+      row.append(label,rename,del);list.append(row);
     });
-    sheetBody.append(list);
+    const search=node("input","chat-next-input-select");search.placeholder="搜索对话与消息";search.setAttribute("aria-label","搜索对话");
+    search.addEventListener("input",()=>{const q=search.value.toLowerCase();[...list.children].forEach((row,i)=>{const t=threads[i];row.hidden=!(t.title+" "+t.messages.map(m=>m.content).join(" ")).toLowerCase().includes(q)})});
+    sheetBody.append(search,list);
   }
   const buildHistoryFresh=()=>{if(drawer==="history"){sheetBody.replaceChildren();buildHistory()}};
   function buildSettings(){
@@ -465,7 +497,7 @@ function mount(content){
     const callState=window.YanyaVoice?.isCalling()?"当前正在语音通话中，请使用自然、适合朗读的口语回复。":t.calls?.length?"最近一次语音通话已挂断，当前为文字聊天。":"";
     const messages=[
       ...(callState?[{role:"system",content:callState}]:[]),
-      ...([p.system.trim(),bookContext().system].filter(Boolean).length?[{role:"system",content:[p.system.trim(),bookContext().system].filter(Boolean).join("\n\n")}]:[]),
+      ...([p.system.trim(),bookContext(t.characterId).system].filter(Boolean).length?[{role:"system",content:[p.system.trim(),bookContext(t.characterId).system].filter(Boolean).join("\n\n")}]:[]),
       ...t.messages.slice(-40).map(m=>({role:m.role,content:m.content}))
     ];
     const controller=new AbortController();
@@ -477,7 +509,31 @@ function mount(content){
         "Accept":p.stream?"text/event-stream, application/json":"application/json"};
       const key=keyGet(p.id);
       if(key)headers.Authorization="Bearer "+key;
-      const response=await fetch(url,{
+      const tools=window.YanyaMCP?.tools()||{out:[],map:{}};
+      let response;
+      if(tools.out.length){
+        for(let round=0;round<5;round++){
+          response=await fetch(url,{method:"POST",mode:"cors",credentials:"omit",cache:"no-store",headers,
+            body:JSON.stringify({model:p.model,messages,stream:false,tools:tools.out,tool_choice:"auto"}),signal:controller.signal});
+          const data=await readJSON(response),msg=data?.choices?.[0]?.message,calls=msg?.tool_calls||[];
+          if(!calls.length){response=new Response(JSON.stringify(data),{headers:{"Content-Type":"application/json"}});break}
+          if(round===4)throw Error("工具调用已达 4 轮，请继续发送消息。");
+          if(calls.length>8)throw Error("单轮工具调用过多，请缩小请求范围。");
+          messages.push({role:"assistant",content:msg.content||null,tool_calls:calls});
+          for(const call of calls){
+            if(controller.signal.aborted)throw new DOMException("请求已停止","AbortError");
+            const hit=tools.map[call.function?.name];let result;
+            try{
+              if(!hit)throw Error("未找到工具");
+              const args=JSON.parse(call.function.arguments||"{}");
+              if(!confirm("执行 MCP 工具？\n"+hit.server.name+" · "+hit.tool+"\n"+JSON.stringify(args,null,2).slice(0,3500)))throw Error("用户取消了本次工具调用");
+              setStatus("正在调用："+hit.server.name+" / "+hit.tool);
+              result=await window.YanyaMCP.call(hit.server.id,hit.tool,args,controller.signal);
+            }catch(e){if(e.name==="AbortError")throw e;result={isError:true,message:e.message}}
+            messages.push({role:"tool",tool_call_id:call.id,content:JSON.stringify(result).slice(0,24000)});
+          }
+        }
+      }else response=await fetch(url,{
         method:"POST",mode:"cors",credentials:"omit",cache:"no-store",headers,
         body:JSON.stringify({model:p.model,messages,stream:p.stream}),signal:controller.signal
       });
@@ -540,12 +596,12 @@ function mount(content){
     }
   }
   const voiceAdapter={
-    name:()=>window.YanyaLibrary?.characterName()||picked().name||"角色",
+    name:()=>window.YanyaLibrary?.characterName(selectedThread().characterId)||picked().name||"角色",
     ready:()=>!pending&&Boolean(picked().url&&picked().model),
     send:text=>send(false,text),
     stop:()=>pending?.abort(),
     record(duration){const t=selectedThread();(t.calls||(t.calls=[])).push({at:timestamp(),duration});t.calls=t.calls.slice(-100);persist();renderMessages()},
-    lock(value){historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
+    lock(value){roleSelect.disabled=value;historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
   };
   input.addEventListener("keydown",e=>{
     if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){

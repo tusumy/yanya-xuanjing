@@ -10,7 +10,7 @@ const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(_){re
 const format=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 function stopListening(){const r=recognition;recognition=null;if(r){r.onend=null;r.onresult=null;r.onerror=null;try{r.abort()}catch(_){}}}
 function stopSpeech(){const s=speaking;speaking=null;window.speechSynthesis?.cancel();s?.finish();}
-function speak(text){
+function speakSystem(text){
  stopSpeech();
  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance)return Promise.reject(Error('设备没有系统朗读引擎，可继续看字幕。'));
  stopListening();
@@ -23,19 +23,50 @@ function speak(text){
   window.speechSynthesis.speak(u);
  });
 }
+async function speak(text){
+ const config=load();
+ if(config.mode!=="mcp")return speakSystem(text);
+ stopSpeech();stopListening();
+ const controller=new AbortController();let audio=null,url="",owned=false,settle=null;
+ const state={finish(){controller.abort();if(audio){audio.pause();audio.removeAttribute("src");audio.load()}if(owned&&url)URL.revokeObjectURL(url);settle?.()}};
+ speaking=state;
+ try{
+  const args={text:(config.tags||"[warm]")+" "+text,title:text.replace(/\s+/g," ").slice(0,24)||"砚芽语音"};
+  if(config.voiceId)args.voice_id=config.voiceId;
+  if(config.modelId)args.model_id=config.modelId;
+  const result=await window.YanyaMCP.call(config.server,"text_to_speech",args,controller.signal);
+  if(controller.signal.aborted)return;
+  url=result?.structuredContent?.audio_url||result?.content?.find(x=>x.type==="resource_link"&&String(x.mimeType||"").startsWith("audio/"))?.uri||"";
+  if(!url){
+    const item=result?.content?.find(x=>x.type==="audio");
+    if(item){const bytes=Uint8Array.from(atob(item.data),c=>c.charCodeAt(0));url=URL.createObjectURL(new Blob([bytes],{type:item.mimeType||"audio/mpeg"}));owned=true;}
+  }
+  if(!url)throw Error("MCP 语音服务没有返回音频链接或音频数据。");
+  if(!owned&&new URL(url).protocol!=="https:")throw Error("音频链接须使用 HTTPS。");
+  audio=new Audio(url);
+  await new Promise((resolve,reject)=>{settle=resolve;audio.onended=resolve;audio.onerror=()=>reject(Error("音频播放失败，请检查音频地址或跨域权限。"));audio.play().catch(reject)});
+ }catch(e){if(!controller.signal.aborted)throw e}
+ finally{if(speaking===state)speaking=null;if(audio){audio.pause();audio.removeAttribute("src");audio.load()}if(owned&&url)URL.revokeObjectURL(url)}
+}
 function settings(){
  if(settingsUI)return;
  const config=load(),overlay=node('div');overlay.className='yanya-voice-overlay';settingsUI=overlay;
  const panel=node('section');panel.className='yanya-voice-card';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','语音设置');
  const previous=document.activeElement,close=()=>{overlay.remove();settingsUI=null;previous?.focus()};
  const field=(title,input)=>{const label=node('label',title);label.append(input);panel.append(label)};
+ const mode=node('select');[['system','设备系统声音'],['mcp','MCP 语音音色']].forEach(([v,t])=>{const o=node('option',t);o.value=v;mode.append(o)});mode.value=config.mode||'system';field('朗读方式',mode);
+ const server=node('select');const empty=node('option','选择支持 text_to_speech 的 MCP');empty.value='';server.append(empty);
+ (window.YanyaMCP?.servers()||[]).filter(s=>s.enabled&&(s.tools||[]).some(t=>t.name==='text_to_speech')).forEach(s=>{const o=node('option',s.name);o.value=s.id;server.append(o)});server.value=config.server||'';field('语音 MCP 服务',server);
+ const voiceId=node('input');voiceId.value=config.voiceId||'';field('MCP Voice ID · 可留空',voiceId);
+ const modelId=node('input');modelId.value=config.modelId||'';field('MCP Model ID · 可留空',modelId);
+ const tags=node('input');tags.value=config.tags||'[warm]';field('语音标签',tags);
  const lang=node('select');[['zh-CN','普通话'],['zh-HK','粤语'],['en-US','English']].forEach(([value,text])=>{const o=node('option',text);o.value=value;lang.append(o)});lang.value=config.lang||'zh-CN';field('识别与朗读语言',lang);
  const voice=node('select');const fill=()=>{voice.replaceChildren();const o=node('option','系统默认');o.value='';voice.append(o);window.speechSynthesis?.getVoices().forEach(v=>{const o=node('option',v.name+' · '+v.lang);o.value=v.voiceURI;voice.append(o)});voice.value=config.voice||''};fill();window.speechSynthesis?.addEventListener('voiceschanged',fill);
  field('系统声音',voice);
  const rate=node('input');rate.type='range';rate.min='0.5';rate.max='1.5';rate.step='0.1';rate.value=config.rate||0.9;field('朗读速度',rate);
- panel.append(node('p','当前使用设备系统语音。麦克风识别是否可用取决于浏览器和设备；部分系统识别服务会联网。这里不调用付费语音接口。'));
+ panel.append(node('p','系统模式使用设备声音。MCP 模式在点击朗读或通话回复时调用所选语音服务，可能消耗该服务额度。麦克风识别取决于浏览器，部分设备识别服务会联网。'));
  const cleanup=()=>{window.speechSynthesis?.removeEventListener('voiceschanged',fill);close()};
- panel.append(button('保存',()=>{try{localStorage.setItem(KEY,JSON.stringify({lang:lang.value,voice:voice.value,rate:Number(rate.value)}));cleanup()}catch(_){panel.append(node('p','保存失败，本机存储不可用。'))}}),button('关闭',cleanup));overlay.append(panel);document.body.append(overlay);panel.querySelector('select').focus();
+ panel.append(button('保存',()=>{try{if(mode.value==='mcp'&&!server.value)throw Error('先连接支持 text_to_speech 的 MCP 服务');localStorage.setItem(KEY,JSON.stringify({mode:mode.value,server:server.value,voiceId:voiceId.value.trim(),modelId:modelId.value.trim(),tags:tags.value.trim()||'[warm]',lang:lang.value,voice:voice.value,rate:Number(rate.value)}));cleanup()}catch(e){panel.append(node('p',e.message||'保存失败，本机存储不可用。'))}}),button('关闭',cleanup));overlay.append(panel);document.body.append(overlay);panel.querySelector('select').focus();
 }
 function dictate(done,status){
  if(call||dictating){status('请先结束当前语音。',true);return}

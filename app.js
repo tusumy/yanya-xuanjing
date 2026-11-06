@@ -194,9 +194,10 @@
     const expand = element("details", "tianji-bridge");
     expand.append(element("summary", "", "其他术式 · 开发中"));
     expand.append(card("星匣 · 模型管理", "后续增加 Provider 配置、密钥安全存储与连通性测试。"));
-    expand.append(card("外部术式 · MCP", "后续整合已连接工具、状态与危险操作确认。"));
+    const mcpBox=element("div","module-card");window.YanyaMCP?.mount(mcpBox);expand.append(mcpBox);
     expand.append(card("观星镜 · 多模态", "后续整合生图、视觉模型、语音与附件。"));
     content.append(expand);
+    const dataBox=element("div","module-card");window.YanyaData?.mount(dataBox);content.append(dataBox);
   }
   function renderGarden() {
     const count = memories().length;

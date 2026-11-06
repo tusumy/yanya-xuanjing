@@ -5,8 +5,8 @@ const KEY='yanya.xuanjing.library.v1';
 const clean=x=>({user:String(x?.user||'').slice(0,80),active:String(x?.active||''),cards:(Array.isArray(x?.cards)?x.cards:[]).slice(0,100).map(c=>({id:String(c.id||Date.now()),name:String(c.name||'新角色').slice(0,80),system:String(c.system||'').slice(0,12000),world:String(c.world||'').slice(0,12000),greeting:String(c.greeting||'').slice(0,12000)}))});
 const read=()=>{try{return clean(JSON.parse(localStorage.getItem(KEY)))}catch(_){return clean({})}};
 const el=(tag,text)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e};
-window.YanyaLibrary={characterName(){const d=read();return d.cards.find(c=>c.id===d.active)?.name||""},context(){
- const d=read(),c=d.cards.find(c=>c.id===d.active);
+window.YanyaLibrary={characters:()=>read().cards,characterName(id){const d=read();return d.cards.find(c=>c.id===(id||d.active))?.name||""},context(id){
+ const d=read(),c=d.cards.find(c=>c.id===(id||d.active));
  const replace=s=>s.replace(/\{\{user\}\}/g,d.user||'你').replace(/\{\{char\}\}/g,c?.name||'我');
  return {system:replace([d.user?'用户名字：'+d.user:'',c?'角色名字：'+c.name:'',c?.system,c?.world].filter(Boolean).join('\n\n')),greeting:replace(c?.greeting||'')};
 },mount(root){
