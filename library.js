@@ -5,7 +5,7 @@ const KEY='yanya.xuanjing.library.v1';
 const clean=x=>({user:String(x?.user||'').slice(0,80),active:String(x?.active||''),cards:(Array.isArray(x?.cards)?x.cards:[]).slice(0,100).map(c=>({id:String(c.id||Date.now()),name:String(c.name||'新角色').slice(0,80),system:String(c.system||'').slice(0,12000),world:String(c.world||'').slice(0,12000),greeting:String(c.greeting||'').slice(0,12000)}))});
 const read=()=>{try{return clean(JSON.parse(localStorage.getItem(KEY)))}catch(_){return clean({})}};
 const el=(tag,text)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e};
-window.YanyaLibrary={characters:()=>read().cards,characterName(id){const d=read();return d.cards.find(c=>c.id===(id||d.active))?.name||""},context(id){
+window.YanyaLibrary={characterId:id=>id||read().active,characters:()=>read().cards,characterName(id){const d=read();return d.cards.find(c=>c.id===(id||d.active))?.name||""},context(id){
  const d=read(),c=d.cards.find(c=>c.id===(id||d.active));
  const replace=s=>s.replace(/\{\{user\}\}/g,d.user||'你').replace(/\{\{char\}\}/g,c?.name||'我');
  return {system:replace([d.user?'用户名字：'+d.user:'',c?'角色名字：'+c.name:'',c?.system,c?.world].filter(Boolean).join('\n\n')),greeting:replace(c?.greeting||'')};
@@ -16,12 +16,13 @@ window.YanyaLibrary={characters:()=>read().cards,characterName(id){const d=read(
  const button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b};
  const field=(title,value,fn,multi=false)=>{const label=el('label');label.className='chat-next-field';const input=el(multi?'textarea':'input');input.value=value;input.maxLength=multi?12000:80;if(multi)input.rows=5;input.oninput=()=>fn(input.value);label.append(el('span',title),input);form.append(label)};
  field('你的名字 · 用于 {{user}}',d.user,v=>{d.user=v});
+ window.YanyaAssets?.avatarControl(form,{role:'user',name:'你的头像'});
  const select=el('select');select.className='chat-next-input-select';const none=el('option','不使用角色');none.value='';select.append(none);
  d.cards.forEach(c=>{const o=el('option',c.name);o.value=c.id;select.append(o)});select.value=d.active;
  select.onchange=()=>{d.active=select.value;if(persist())this.mount(root)};form.append(select);
  form.append(button('添加角色',()=>{d.active=Date.now().toString(36)+Math.random().toString(36).slice(2);d.cards.push({id:d.active,name:'新角色',system:'',world:'',greeting:''});if(persist())this.mount(root)}));
  const c=d.cards.find(c=>c.id===d.active);
- if(c){field('角色名字 · {{char}}',c.name,v=>c.name=v);field('角色设定',c.system,v=>c.system=v,true);field('世界书 · 每次聊天随上下文发送',c.world,v=>c.world=v,true);field('开场白 · 新建对话时使用',c.greeting,v=>c.greeting=v,true);}
+ if(c){window.YanyaAssets?.avatarControl(form,{role:'assistant',id:c.id,name:c.name+'的头像'});field('角色名字 · {{char}}',c.name,v=>c.name=v);field('角色设定',c.system,v=>c.system=v,true);field('世界书 · 每次聊天随上下文发送',c.world,v=>c.world=v,true);field('开场白 · 新建对话时使用',c.greeting,v=>c.greeting=v,true);}
  form.append(button('保存书房',()=>{if(persist())this.mount(root)}));
  if(c)form.append(button('删除当前角色',()=>{if(!confirm('确定删除角色「'+c.name+'」？'))return;d.cards=d.cards.filter(x=>x.id!==c.id);d.active='';if(persist())this.mount(root)}));
  form.append(button('导出书房',()=>{const u=URL.createObjectURL(new Blob([JSON.stringify({format:'yanya-library-v1',...d},null,2)],{type:'application/json'}));const a=el('a');a.href=u;a.download='砚芽-书房.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}));

@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const P='yanya.xuanjing.',ROLLBACK=P+'import-rollback.v1';
-const ALLOWED=new Set(['theme.v1','chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
+const ALLOWED=new Set(['avatars.v1','theme.v1','chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
 const node=(t,text)=>{const e=document.createElement(t);if(text!==undefined)e.textContent=text;return e};
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(_){return f}};
 const collect=()=>Object.fromEntries([...ALLOWED].filter(k=>localStorage.getItem(k)!==null).map(k=>[k,localStorage.getItem(k)]));
@@ -33,7 +33,7 @@ function apply(entries){
 function mount(root){
  const form=node('div');form.className='chat-next-settings-form';root.replaceChildren(form);const status=node('p');status.setAttribute('role','status');
  const button=(text,fn)=>{const b=node('button',text);b.type='button';b.onclick=fn;return b};
- const exportBackup=()=>{const payload={format:'YanyaBackup',version:1,at:new Date().toISOString(),values:collect()};const u=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const a=node('a');a.href=u;a.download='砚芽-完整备份-'+payload.at.slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);status.textContent='已导出，未包含会话密钥。'};
+ const exportBackup=()=>{const payload={format:'YanyaBackup',version:1,at:new Date().toISOString(),values:collect()};const u=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const a=node('a');a.href=u;a.download='砚芽-完整备份-'+payload.at.slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);status.textContent='已导出，包含头像；不含会话密钥和导入字体文件。'};
  const preview=node('section');preview.className='module-card';preview.hidden=true;
  const file=node('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
  file.onchange=async()=>{try{const f=file.files?.[0];if(!f)return;if(f.size>24*1024*1024)throw Error('文件超过 24 MB');const raw=JSON.parse(await f.text());preview.replaceChildren();preview.hidden=false;const selections=[];
@@ -47,7 +47,7 @@ function mount(root){
   }else throw Error('不支持的备份格式');
   preview.append(button('确认导入所选内容',()=>{try{const entries=selections.filter(s=>s.check.checked).flatMap(s=>s.entries());if(!entries.length)throw Error('请至少选择一项');if(!confirm('确认导入 '+entries.length+' 项数据？导入完成后将刷新页面。'))return;apply(entries);location.reload()}catch(e){status.textContent='导入失败：'+e.message}}));
  }catch(e){status.textContent='读取失败：'+e.message}finally{file.value=''}};
- form.append(node('h3','数据备份与旧版迁移'),node('p','先导出完整备份，再选择文件查看导入预览。所有数据只写入砚芽自己的存储。'),button('导出砚芽完整备份',exportBackup),button('选择砚芽 / 旧砚屿备份',()=>file.click()),button('撤销最近一次导入',()=>{try{const old=read(ROLLBACK,null);if(!old||typeof old!=='object')throw Error('没有可恢复的导入快照');if(!confirm('恢复导入前数据？导入后新写入的内容会被覆盖。'))return;const current=collect();for(const k of ALLOWED){if(Object.hasOwn(old,k))localStorage.setItem(k,old[k]);else localStorage.removeItem(k)}localStorage.setItem(ROLLBACK,JSON.stringify(current));location.reload()}catch(e){status.textContent=e.message}}),file,preview,status);
+ form.append(node('h3','数据备份与旧版迁移'),node('p','先导出数据备份，再选择文件查看导入预览。头像包含在备份中；导入字体文件需在外观面板单独导出，JSON 不包含字体文件。所有数据只写入砚芽自己的存储。'),button('导出砚芽完整备份',exportBackup),button('选择砚芽 / 旧砚屿备份',()=>file.click()),button('撤销最近一次导入',()=>{try{const old=read(ROLLBACK,null);if(!old||typeof old!=='object')throw Error('没有可恢复的导入快照');if(!confirm('恢复导入前数据？导入后新写入的内容会被覆盖。'))return;const current=collect();for(const k of ALLOWED){if(Object.hasOwn(old,k))localStorage.setItem(k,old[k]);else localStorage.removeItem(k)}localStorage.setItem(ROLLBACK,JSON.stringify(current));location.reload()}catch(e){status.textContent=e.message}}),file,preview,status);
 }
 window.YanyaData={mount,oldPreview,apply};
 })();

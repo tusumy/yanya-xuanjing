@@ -177,6 +177,8 @@ function mount(content){
   const scrollEnd=()=>{area.scrollTop=area.scrollHeight};
   const bubble=(m,index)=>{
     const box=node("article","chat-next-message "+(m.role==="user"?"mine":"theirs"));
+    const avatar=window.YanyaAssets?.avatar(m.role,window.YanyaLibrary?.characterId(selectedThread().characterId)||selectedThread().characterId||"");
+    if(avatar){const img=node("img","chat-next-avatar");img.src=avatar;img.alt=m.role==="user"?"你的头像":"角色头像";img.width=img.height=36;box.append(img);}
     const content=node("div","chat-next-bubble",m.content);
     box.append(content);
     if(m.role==="assistant"){
@@ -597,6 +599,7 @@ function mount(content){
     }
   }
   const voiceAdapter={
+    avatar:()=>window.YanyaAssets?.avatar("assistant",window.YanyaLibrary?.characterId(selectedThread().characterId)||"")||"",
     name:()=>window.YanyaLibrary?.characterName(selectedThread().characterId)||picked().name||"角色",
     ready:()=>!pending&&Boolean(picked().url&&picked().model),
     send:text=>send(false,text),

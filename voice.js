@@ -117,6 +117,7 @@ function startCall(adapter){
  const sendBtn=button('发送',()=>{if(!c.busy&&input.value.trim()){const text=input.value;input.value='';send(text)}});input.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();sendBtn.click()}};
  const actions=node('div');actions.className='yanya-voice-actions';actions.append(mic,automatic,mute,button('停止朗读',()=>stopSpeech()),button('挂断',hangup));
  if(!Recognition){mic.disabled=true;automatic.disabled=true;status.textContent='已接通 · 当前浏览器不支持识别，请输入文字。'}
+ const avatar=adapter.avatar?.();if(avatar){const image=node("img");image.className="call-avatar";image.src=avatar;image.alt=adapter.name()+"的头像";panel.append(image)}
  panel.append(title,status,time,log,input,sendBtn,actions);overlay.append(panel);document.body.append(overlay);adapter.lock(true);actions.lastChild.focus();c.timer=setInterval(()=>{time.textContent=format(Math.floor((Date.now()-c.started)/1000))},500);
 }
 window.YanyaVoice={speak,stopSpeech,dictate,settings,call:startCall,hangup,dispose(){hangup();stopListening();stopSpeech();dictating=false},isCalling:()=>Boolean(call)};
