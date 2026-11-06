@@ -23,6 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check chat, MCP, migration and voice
+        run: |
+          node --check chat-next.js
+          node --check library.js
+          node --check mcp.js
+          node --check data-hub.js
+          node --check voice.js
+          node tests/chat-integration.cjs
+          node tests/mcp-data.cjs
+          node tests/voice.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
