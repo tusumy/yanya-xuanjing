@@ -48,6 +48,17 @@ async function speak(text){
  }catch(e){if(!controller.signal.aborted)throw e}
  finally{if(speaking===state)speaking=null;if(audio){audio.pause();audio.removeAttribute("src");audio.load()}if(owned&&url)URL.revokeObjectURL(url)}
 }
+async function generate(text,signal){
+ const config=load();if(config.mode!=="mcp"||!config.server)throw Error("保存声音需要先在语音设置中选择 MCP 音色；系统朗读不能导出音频。");
+ const args={text:(config.tags||"[warm]")+" "+text,title:text.replace(/\s+/g," ").slice(0,24)||"砚芽语音"};if(config.voiceId)args.voice_id=config.voiceId;if(config.modelId)args.model_id=config.modelId;
+ const result=await window.YanyaMCP.call(config.server,"text_to_speech",args,signal);
+ const item=result?.content?.find(x=>x.type==="audio");
+ if(item){const blob=new Blob([Uint8Array.from(atob(item.data),c=>c.charCodeAt(0))],{type:item.mimeType||"audio/mpeg"});return window.YanyaNotes.fromBlob(blob,args.title,0,text)}
+ const url=result?.structuredContent?.audio_url||result?.content?.find(x=>x.type==="resource_link"&&String(x.mimeType||"").startsWith("audio/"))?.uri;
+ if(!url||new URL(url).protocol!=="https:")throw Error("没有可保存的 HTTPS 音频链接");
+ const response=await fetch(url,{credentials:"omit",signal});if(!response.ok)throw Error("下载语音失败：HTTP "+response.status);if(Number(response.headers.get("content-length"))>650000)throw Error("声音超过 650 KB，请缩短回复后生成");
+ return window.YanyaNotes.fromBlob(await response.blob(),args.title,0,text);
+}
 function settings(){
  if(settingsUI)return;
  const config=load(),overlay=node('div');overlay.className='yanya-voice-overlay';settingsUI=overlay;
@@ -120,6 +131,6 @@ function startCall(adapter){
  const avatar=adapter.avatar?.();if(avatar){const image=node("img");image.className="call-avatar";image.src=avatar;image.alt=adapter.name()+"的头像";panel.append(image)}
  panel.append(title,status,time,log,input,sendBtn,actions);overlay.append(panel);document.body.append(overlay);adapter.lock(true);actions.lastChild.focus();c.timer=setInterval(()=>{time.textContent=format(Math.floor((Date.now()-c.started)/1000))},500);
 }
-window.YanyaVoice={speak,stopSpeech,dictate,settings,call:startCall,hangup,dispose(){hangup();stopListening();stopSpeech();dictating=false},isCalling:()=>Boolean(call)};
+window.YanyaVoice={generate,speak,stopSpeech,dictate,settings,call:startCall,hangup,dispose(){hangup();stopListening();stopSpeech();dictating=false},isCalling:()=>Boolean(call)};
 window.addEventListener('pagehide',()=>{hangup();stopListening();stopSpeech()});
 })();

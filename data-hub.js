@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const P='yanya.xuanjing.',ROLLBACK=P+'import-rollback.v1';
-const ALLOWED=new Set(['avatars.v1','theme.v1','chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
+const ALLOWED=new Set(['stickers.v1','avatars.v1','theme.v1','chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
 const node=(t,text)=>{const e=document.createElement(t);if(text!==undefined)e.textContent=text;return e};
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(_){return f}};
 const collect=()=>Object.fromEntries([...ALLOWED].filter(k=>localStorage.getItem(k)!==null).map(k=>[k,localStorage.getItem(k)]));

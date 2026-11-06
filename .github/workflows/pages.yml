@@ -37,6 +37,9 @@ jobs:
           node --check theme.js
           node --check personal-assets.js
           node --check attachments.js
+          node --check branches.js
+          node --check stickers.js
+          node --check voice-notes.js
           node tests/chat-integration.cjs
           node tests/mcp-data.cjs
           node tests/voice.cjs
@@ -44,6 +47,9 @@ jobs:
           node tests/personal-assets.cjs
           node tests/attachments.cjs
           node tests/chat-attachments.cjs
+          node tests/branches-media.cjs
+          node tests/chat-branches.cjs
+          node tests/voice-notes.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
