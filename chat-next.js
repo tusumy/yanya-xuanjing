@@ -38,6 +38,7 @@ const thread=t=>{
   return {id:typeof t.id==="string"&&t.id.length<100?t.id:uid(),
     title:typeof t.title==="string"?t.title.slice(0,50):"新对话",
     updated:typeof t.updated==="string"?t.updated:timestamp(),
+    calls:Array.isArray(t.calls)?t.calls.filter(c=>c&&typeof c==="object").slice(-100).map(c=>({at:String(c.at||""),duration:Number(c.duration)||0})):[],
     messages:t.messages.map(message).filter(Boolean).slice(-MAX_MESSAGES)};
 };
 const provider=x=>x&&typeof x==="object"?{
@@ -121,6 +122,10 @@ function mount(content){
   const settingsButton=btn("⚙",()=>openDrawer("settings"),"chat-next-icon");
   settingsButton.setAttribute("aria-label","管理接口");
   toolbar.append(historyButton,providerSelect,modelSelect,addButton,settingsButton);
+  const voiceActions=node("div","chat-next-sheet-actions");
+  const callButton=btn("☎ 通话",()=>window.YanyaVoice?.call(voiceAdapter));
+  const dictation=btn("🎙 语音输入",()=>window.YanyaVoice?.dictate(text=>{input.value=(input.value+" "+text).trim();input.focus()},setStatus));
+  voiceActions.append(callButton,dictation,btn("语音设置",()=>window.YanyaVoice?.settings()));
   const area=node("div","chat-next-messages");
   area.setAttribute("role","log");
   area.setAttribute("aria-live","polite");
@@ -150,7 +155,7 @@ function mount(content){
   sheet.append(sheetHead,sheetBody);
   shade.append(sheet);
   shade.addEventListener("click",e=>{if(e.target===shade)openDrawer("")});
-  root.append(toolbar,area,status,compose,shade);
+  root.append(toolbar,voiceActions,area,status,compose,shade);
   content.replaceChildren(root);
 
   const persist=()=>{
@@ -174,7 +179,7 @@ function mount(content){
         try{await navigator.clipboard.writeText(m.content);copy.textContent="已复制"}
         catch(_){copy.textContent="复制失败"}
       },"chat-next-copy");
-      box.append(copy);
+      box.append(copy,btn("朗读",()=>window.YanyaVoice?.speak(m.content).catch(e=>setStatus(e.message,true)),"chat-next-copy"));
     }
     area.append(box);return content;
   };
@@ -187,6 +192,7 @@ function mount(content){
         node("p","","选一个接口与模型，开始对话。"));
       area.append(empty);
     }else t.messages.forEach(bubble);
+    (t.calls||[]).forEach(c=>area.append(node("div","chat-next-status","☎ 通话记录 · "+Math.floor(c.duration/60)+"分"+c.duration%60+"秒 · "+new Date(c.at).toLocaleString())));
     retryButton.hidden=t.messages.at(-1)?.role!=="user";
     scrollEnd();
   };
@@ -212,7 +218,7 @@ function mount(content){
     sendButton.hidden=bool;stopButton.hidden=!bool;
     input.disabled=bool;retryButton.disabled=bool;
     providerSelect.disabled=bool;modelSelect.disabled=bool;
-    addButton.disabled=bool;settingsButton.disabled=bool;
+    addButton.disabled=bool;settingsButton.disabled=bool;callButton.disabled=bool;dictation.disabled=bool;
   };
   const newThread=()=>{
     if(pending)return;
@@ -439,9 +445,9 @@ function mount(content){
     if(role==="user"&&t.title==="新对话")t.title=text.replace(/\s+/g," ").slice(0,24)||"新对话";
     t.updated=timestamp();persist();
   };
-  async function send(retry=false){
-    if(pending||disposed)return;
-    const p=picked(),text=input.value.trim();
+  async function send(retry=false,spokenText=null){
+    if(pending||disposed||(spokenText===null&&window.YanyaVoice?.isCalling()))return;
+    const p=picked(),text=spokenText===null?input.value.trim():spokenText.trim();
     if(!retry&&!text)return;
     if(!p.url||!p.model){
       setStatus("先在「接口与模型」配置接口及模型。",true);
@@ -453,10 +459,12 @@ function mount(content){
     if(retry){
       if(t.messages.at(-1)?.role!=="user")return;
     }else{
-      append(t,"user",text);input.value="";
+      append(t,"user",text);if(spokenText===null)input.value="";
     }
     renderMessages();
+    const callState=window.YanyaVoice?.isCalling()?"当前正在语音通话中，请使用自然、适合朗读的口语回复。":t.calls?.length?"最近一次语音通话已挂断，当前为文字聊天。":"";
     const messages=[
+      ...(callState?[{role:"system",content:callState}]:[]),
       ...([p.system.trim(),bookContext().system].filter(Boolean).length?[{role:"system",content:[p.system.trim(),bookContext().system].filter(Boolean).join("\n\n")}]:[]),
       ...t.messages.slice(-40).map(m=>({role:m.role,content:m.content}))
     ];
@@ -515,6 +523,7 @@ function mount(content){
       if(!reply.trim())throw Error("接口返回为空；确认模型名称、服务商格式和流式选项。");
       if(!disposed){
         append(t,"assistant",reply);renderMessages();setStatus("");
+        return reply;
       }
     }catch(e){
       if(disposed)return;
@@ -527,9 +536,17 @@ function mount(content){
       renderMessages();
     }finally{
       if(pending===controller)pending=null;
-      if(!disposed)setBusy(false);
+      if(!disposed){setBusy(false);if(window.YanyaVoice?.isCalling())voiceAdapter.lock(true);}
     }
   }
+  const voiceAdapter={
+    name:()=>window.YanyaLibrary?.characterName()||picked().name||"角色",
+    ready:()=>!pending&&Boolean(picked().url&&picked().model),
+    send:text=>send(false,text),
+    stop:()=>pending?.abort(),
+    record(duration){const t=selectedThread();(t.calls||(t.calls=[])).push({at:timestamp(),duration});t.calls=t.calls.slice(-100);persist();renderMessages()},
+    lock(value){historyButton.disabled=value;providerSelect.disabled=value;modelSelect.disabled=value;addButton.disabled=value;settingsButton.disabled=value;sendButton.disabled=value;dictation.disabled=value;callButton.disabled=value;}
+  };
   input.addEventListener("keydown",e=>{
     if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){
       e.preventDefault();send();
@@ -553,7 +570,7 @@ function mount(content){
   save(PROVIDERS,providers);
   renderProviders();renderMessages();setStatus("");
   singleton={dispose(){
-    disposed=true;pending?.abort();
+    window.YanyaVoice?.dispose();disposed=true;pending?.abort();
     visual?.removeEventListener("resize",adjustViewport);
     visual?.removeEventListener("scroll",adjustViewport);
     input.removeEventListener("focus",onFocus);
