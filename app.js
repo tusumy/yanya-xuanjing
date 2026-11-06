@@ -12,6 +12,7 @@
     oracle: { title: "签庭", kicker: "THE ORACLE GARDEN" },
     library: { title: "藏书楼", kicker: "LIBRARY OF WORLDS" },
     workshop: { title: "天机台", kicker: "ARCANE WORKSHOP" },
+    theme: {title:"外观",kicker:"APPEARANCE"},
     garden: { title: "灵圃", kicker: "A GARDEN IN GROWTH" }
   };
   const SIGNS = [
@@ -96,11 +97,14 @@
     $("#periodLabel").textContent = period === "day" ? "白昼 · 灵圃见晴" : "今夜 · 星海微明";
   }
   $("#periodToggle").addEventListener("click", () => {
+    if(window.YanyaTheme){window.YanyaTheme.togglePeriod();return}
     const next = document.body.dataset.period === "day" ? "night" : "day";
     safeWrite(PERIOD_KEY, next);
     applyPeriod(next);
   });
-  applyPeriod(preferredPeriod());
+  applyPeriod(window.YanyaTheme?document.body.dataset.period:preferredPeriod());
+  window.addEventListener("yanya-theme-change",e=>applyPeriod(e.detail.period));
+  $("#themeOpen")?.addEventListener("click",()=>openPanel("theme"));
   dateLabel();
 
   function renderHeart() {
@@ -231,6 +235,7 @@
       case "library": renderLibrary(); break;
       case "workshop": renderWorkshop(); break;
       case "garden": renderGarden(); break;
+      case "theme":window.YanyaTheme?.mount(content);break;
     }
     scrim.hidden = false;
     panel.classList.add("is-open");

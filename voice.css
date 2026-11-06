@@ -4,7 +4,6 @@
 .yanya-voice-card input,.yanya-voice-card select,.yanya-voice-card button{font:inherit;min-height:44px;border:1px solid #9dcba76b;border-radius:12px;background:#254d3e;color:inherit;padding:10px;max-width:100%;box-sizing:border-box}
 .yanya-voice-card button{cursor:pointer}.yanya-voice-card button:disabled{opacity:.45}.yanya-voice-actions{display:flex;gap:8px;flex-wrap:wrap}.yanya-voice-actions button:last-child{background:#914c50}
 .yanya-voice-transcript{min-height:100px;max-height:40dvh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:14px}.yanya-voice-transcript b{color:#bbdbad}
-body[data-period="day"] .yanya-voice-card{background:#f0f8e9;color:#294b35}body[data-period="day"] .yanya-voice-card input,body[data-period="day"] .yanya-voice-card select,body[data-period="day"] .yanya-voice-card button{background:#dcebd3;color:#294b35}
 .chat-next> .chat-next-sheet-actions{flex-wrap:wrap;padding:4px 0}.chat-next> .chat-next-sheet-actions button{min-height:36px}
 .panel.is-chat .chat-next{grid-template-rows:auto auto minmax(0,1fr) auto auto}
 @media(max-width:480px){.yanya-voice-card{padding:18px;gap:10px}.yanya-voice-actions button{flex:1 1 40%;font-size:13px}}

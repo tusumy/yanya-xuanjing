@@ -1,0 +1,39 @@
+/* Canonical appearance layer. Component files own geometry, this file owns surfaces. */
+html[data-theme] body{background:var(--yn-bg);color:var(--yn-ink);color-scheme:inherit}
+html[data-theme][data-wallpaper-scope="page"] body{background-image:linear-gradient(var(--yn-wallpaper-dim),var(--yn-wallpaper-dim)),var(--yn-wallpaper);background-size:cover;background-position:var(--yn-wallpaper-position);background-attachment:scroll}
+html[data-theme] :is(.panel,.chat-next-sheet,.yanya-voice-card){background:var(--yn-surface);color:var(--yn-ink);border-color:var(--yn-line)}
+html[data-theme] :is(.module-card,.memory-card,.dock,.tianji,.tianji-card,.tianji-pillar,.location){background:var(--yn-glass);color:var(--yn-ink);border-color:var(--yn-line)}
+html[data-theme] :is(.section-lead,.module-card p,.oracle-text,.intro p,.yanya-voice-transcript b,.location small){color:var(--yn-muted)}
+html[data-theme] :is(.label,.quote){color:var(--yn-ink)}
+html[data-theme] :is(.primary-button,.secondary-button,.chat-next-icon,.chat-next-provider,.chat-next-model,.chat-next-input-select,.chat-next-sheet-actions button,.chat-next-sheet-body button,.yanya-voice-card button,.yanya-voice-card input,.yanya-voice-card select,.chat-next-field input,.chat-next-field textarea,.field,.tianji-input,.tianji-import){background:var(--yn-glass);color:var(--yn-ink);border-color:var(--yn-line);color-scheme:inherit}
+html[data-theme] :is(.chat-next-field,.chat-next-checkbox,.chat-next-sheet-head strong,.chat-next-section-label){color:var(--yn-ink)}
+html[data-theme] :is(.chat-next-provider option,.chat-next-model option,.chat-next-input-select option){background:var(--yn-surface);color:var(--yn-ink)}
+html[data-theme] :is(.chat-next-feedback,.chat-next-help,.chat-next-status,.chat-next-copy,.chat-next-empty){color:var(--yn-muted)}
+html[data-theme] :is(.chat-next-status.is-error,.tianji-error){color:var(--yn-error)}
+html[data-theme] :is(.chat-next-empty span,.chat-next-empty strong){color:var(--yn-accent)}
+html[data-theme] :is(.chat-next-composer,.chat-next-thread){background:var(--yn-glass);border-color:var(--yn-line)}
+html[data-theme] .chat-next-thread.active{background:color-mix(in srgb,var(--yn-accent) 15%,var(--yn-surface));border-color:var(--yn-accent)}
+html[data-theme] .chat-next-input{color:var(--yn-ink)}
+html[data-theme] :is(.chat-next-field input,.chat-next-field textarea)::placeholder{color:var(--yn-muted)}
+html[data-theme] .chat-next-messages{gap:var(--yn-gap);background-color:var(--yn-bg);font-family:var(--yn-font)}
+html[data-theme][data-wallpaper-scope="chat"] :is(.chat-next-messages,.theme-preview){background-image:linear-gradient(var(--yn-wallpaper-dim),var(--yn-wallpaper-dim)),var(--yn-wallpaper);background-size:cover;background-position:var(--yn-wallpaper-position);background-repeat:no-repeat;background-attachment:local}
+html[data-theme][data-wallpaper-scroll="0"] :is(.chat-next-messages,.theme-preview){background-attachment:scroll}
+html[data-theme] :is(.chat-next-bubble,.theme-preview-assistant){background:var(--yn-assistant);color:var(--yn-assistant-text);border:1px solid var(--yn-line);border-radius:18px 18px 18px 5px;font:var(--yn-font-size)/var(--yn-line-height) var(--yn-font)}
+html[data-theme] :is(.chat-next-message.mine .chat-next-bubble,.theme-preview-user){background:var(--yn-user);color:var(--yn-user-text);border:1px solid var(--yn-line);border-radius:18px 18px 5px 18px}
+html[data-theme][data-bubble-skin="square"] :is(.chat-next-message.mine .chat-next-bubble,.chat-next-bubble,.theme-preview-assistant,.theme-preview-user){border-radius:7px}
+html[data-theme][data-bubble-skin="outline"] :is(.chat-next-message.mine .chat-next-bubble,.chat-next-bubble,.theme-preview-assistant,.theme-preview-user){border:2px solid currentColor;box-shadow:3px 3px 0 var(--yn-line);border-radius:14px}
+html[data-theme][data-theme-glass="1"] :is(.chat-next-bubble,.theme-preview-assistant,.theme-preview-user,.module-card,.dock){backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme][data-theme-glass="0"] :is(.chat-next-bubble,.module-card,.dock){backdrop-filter:none;-webkit-backdrop-filter:none}
+html[data-theme] .chat-next{--c-gold:var(--yn-accent);--c-text:var(--yn-ink);--c-line:var(--yn-line);--c-soft:var(--yn-glass)}
+html[data-theme] :is(.chat-next-send,.chat-next-primary,.primary-button){background:var(--yn-accent);color:var(--yn-accent-on);border-color:transparent}
+html[data-theme] .yanya-voice-actions button:last-child{background:#914c50;color:#fff}
+.theme-settings{display:flex;flex-direction:column;gap:16px;color:var(--yn-ink);min-width:0}
+.theme-section{background:var(--yn-glass);border:1px solid var(--yn-line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:13px;min-width:0}
+.theme-section h3{font-size:15px;margin:0}.theme-section p,.theme-status{font-size:12px;line-height:1.7;color:var(--yn-muted);margin:0}
+.theme-section button,.theme-section input:not([type="checkbox"]):not([type="range"]),.theme-section select{font:inherit;font-size:14px;min-height:42px;padding:9px 12px;border:1px solid var(--yn-line);border-radius:10px;background:var(--yn-surface);color:var(--yn-ink);max-width:100%;box-sizing:border-box}
+.theme-section input[type="range"]{width:100%;accent-color:var(--yn-accent)}
+.theme-section button{cursor:pointer}.theme-field{display:flex;flex-direction:column;gap:8px;font-size:13px}.theme-check{display:flex;align-items:center;gap:10px;font-size:13px}.theme-check input{width:19px;height:19px;accent-color:var(--yn-accent)}
+.theme-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.theme-presets button{display:flex;align-items:center;gap:10px;text-align:left}.theme-presets button::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--swatch);flex-shrink:0}.theme-presets button[aria-pressed="true"]{outline:2px solid var(--yn-accent);outline-offset:1px}
+.theme-color{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:13px}.theme-color input[type="color"]{width:64px;padding:4px!important}.theme-preview{display:flex;flex-direction:column;gap:var(--yn-gap);padding:18px 12px;border-radius:14px;background-color:var(--yn-bg);overflow:hidden}.theme-preview-assistant,.theme-preview-user{max-width:88%;padding:10px 13px;overflow-wrap:anywhere}.theme-preview-user{align-self:flex-end}
+html[data-theme][data-theme-motion="reduced"] *,html[data-theme][data-theme-motion="reduced"] *::before,html[data-theme][data-theme-motion="reduced"] *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){html[data-theme] *,html[data-theme] *::before,html[data-theme] *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}

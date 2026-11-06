@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const P='yanya.xuanjing.',ROLLBACK=P+'import-rollback.v1';
-const ALLOWED=new Set(['chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
+const ALLOWED=new Set(['theme.v1','chat-threads.v1','chat-active.v1','providers.v2','active-provider.v2','library.v1','memories.v1','mcps.v1','voice.v1','period-override.v1','home-view.v1','cosmos-level.v1','ritual.level','ritual.sphere.v2','ritual.rotation','tianhuan.rings.v1','chat-preview.v1'].map(k=>P+k));
 const node=(t,text)=>{const e=document.createElement(t);if(text!==undefined)e.textContent=text;return e};
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(_){return f}};
 const collect=()=>Object.fromEntries([...ALLOWED].filter(k=>localStorage.getItem(k)!==null).map(k=>[k,localStorage.getItem(k)]));
@@ -11,6 +11,8 @@ function decode(values,k,f){try{return typeof values[k]==='string'?JSON.parse(va
 function oldPreview(raw){
  if(raw.format!=='AevrenXYBackup'||!raw.values||typeof raw.values!=='object')throw Error('不是旧砚屿完整备份');
  const values=raw.values,now=new Date().toISOString(),plans=[],notes=[];
+ const oldTheme=decode(values,'xy.theme',null);
+ if(oldTheme&&window.YanyaTheme)plans.push({label:'旧版外观 · 配色、壁纸与阅读偏好',key:P+'theme.v1',value:window.YanyaTheme.fromXY(oldTheme,decode(values,'xy.bubbleColors',{})),merge:(_,next)=>next});
  const oldChats=arr(decode(values,'xy.chats',[]));
  const chats=oldChats.slice(0,36).map((c,i)=>({id:'xy-'+String(c.id||i),characterId:String(c.characterId||''),title:String(c.title||'旧砚屿对话').slice(0,50),updated:now,messages:arr(c.messages).filter(m=>m&&['assistant','user'].includes(m.role)&&typeof m.text==='string').slice(-120).map(m=>({role:m.role,content:m.text.slice(0,12000),at:typeof m.at==='string'?m.at:typeof m.createdAt==='number'?new Date(m.createdAt).toISOString():now})),calls:arr(c.messages).filter(m=>m?.kind==='call').slice(-100).map(m=>({at:new Date(m.endedAt||Date.now()).toISOString(),duration:Number.isFinite(Number(m.endedAt)-Number(m.startedAt))?Math.max(0,Math.floor((Number(m.endedAt)-Number(m.startedAt))/1000)):0}))}));
  if(chats.length){plans.push({label:'聊天 · '+chats.length+' 段',key:P+'chat-threads.v1',value:chats,merge:(old,next)=>[...arr(old),...next.filter(t=>!arr(old).some(x=>x.id===t.id))].slice(0,36)});notes.push('聊天最多保留 36 段，每段最近 120 条文字，每条最多 12000 字。图片、附件、消息分支、群聊成员及通话完整字幕不在本次迁移范围，原备份仍可保留。')}

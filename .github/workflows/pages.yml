@@ -34,9 +34,11 @@ jobs:
           node --check mcp.js
           node --check data-hub.js
           node --check voice.js
+          node --check theme.js
           node tests/chat-integration.cjs
           node tests/mcp-data.cjs
           node tests/voice.cjs
+          node tests/theme.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site

@@ -130,7 +130,7 @@ function mount(content){
   roleSelect.addEventListener("change",()=>{if(pending||window.YanyaVoice?.isCalling())return;selectedThread().characterId=roleSelect.value;persist();setStatus("已切换本段对话角色。");});
   const callButton=btn("☎ 通话",()=>window.YanyaVoice?.call(voiceAdapter));
   const dictation=btn("🎙 语音输入",()=>window.YanyaVoice?.dictate(text=>{input.value=(input.value+" "+text).trim();input.focus()},setStatus));
-  voiceActions.append(roleSelect,callButton,dictation,btn("语音设置",()=>window.YanyaVoice?.settings()),btn("MCP 工具",()=>openDrawer("mcp")),btn("数据备份",()=>openDrawer("data")));
+  voiceActions.append(roleSelect,callButton,dictation,btn("语音设置",()=>window.YanyaVoice?.settings()),btn("MCP 工具",()=>openDrawer("mcp")),btn("数据备份",()=>openDrawer("data")),btn("外观",()=>openDrawer("theme")));
   const area=node("div","chat-next-messages");
   area.setAttribute("role","log");
   area.setAttribute("aria-live","polite");
@@ -317,6 +317,7 @@ function mount(content){
     sheetTitle.textContent=kind==="history"?"对话记录":"接口与模型";
     if(kind==="history")buildHistory();
     if(kind==="settings")buildSettings();
+    if(kind==="theme"){sheetTitle.textContent="外观";window.YanyaTheme?.mount(sheetBody)}
     if(kind==="data"){sheetTitle.textContent="数据备份与旧版迁移";window.YanyaData?.mount(sheetBody)}
     if(kind==="mcp"){sheetTitle.textContent="MCP 外部工具";window.YanyaMCP?.mount(sheetBody)}
   };

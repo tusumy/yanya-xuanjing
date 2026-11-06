@@ -188,10 +188,6 @@ body.panel-open { overflow: hidden; }
 .pulse-dot { display: inline-block; width: 6px; height: 6px; background: var(--lime); border-radius: 50%; box-shadow: 0 0 8px var(--lime); margin-right: 8px; vertical-align: middle; }
 
 body[data-period="day"] {
-  color-scheme: light; --page: #e7f0e9; --ink: #1c443b; --muted: #50786a; --muted-2: #65897d;
-  --outline: rgba(32, 96, 69, .22); --line: rgba(32, 96, 69, .13);
-  --glass: rgba(230, 248, 231, .75); --glass-heavy: rgba(230, 246, 230, .97);
-  --lime: #4e8550; --mint: #306f60; --pink: #b46b8d;
   background: radial-gradient(ellipse 65% 45% at 50% 50%, rgba(126, 206, 167, .38), transparent 75%),
     linear-gradient(180deg, #eef8ef 0%, #dcf1e7 67%, #d6eae5 100%);
 }

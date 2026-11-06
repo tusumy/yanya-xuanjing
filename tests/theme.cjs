@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const memory=new Map(),css={},attrs={};let dark=false,listener,quota=false;
+const root={dataset:attrs,style:{setProperty:(k,v)=>css[k]=v}},body={dataset:{}},meta={};
+const context={window:{matchMedia:()=>({get matches(){return dark},addEventListener:(name,fn)=>listener=fn}),dispatchEvent(){}},document:{documentElement:root,body,querySelector:()=>meta},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>{if(quota)throw Error('quota');memory.set(k,v)}},CustomEvent:function(name,options){this.detail=options.detail},URL};
+vm.createContext(context);vm.runInContext(fs.readFileSync('theme.js','utf8'),context);const theme=context.window.YanyaTheme;
+assert.equal(theme.get().preset,'apple');assert.equal(body.dataset.period,'day');assert.equal(attrs.themeMode,'light');
+theme.set({wallpaper:'https://example.test/wallpaper.jpg',fontSize:19,gap:23});theme.set({preset:'rose',colors:{light:{},dark:{}}});assert.equal(theme.get().wallpaper,'https://example.test/wallpaper.jpg');assert.equal(css['--yn-font-size'],'19px');assert.equal(css['--yn-gap'],'23px');
+dark=true;listener();assert.equal(attrs.themeMode,'dark');assert.equal(body.dataset.period,'night');assert.equal(root.style.colorScheme,'dark');assert.equal(meta.content,css['--yn-bg']);
+theme.set({mode:'light'});listener();assert.equal(attrs.themeMode,'light');assert.equal(theme.get().mode,'light');theme.togglePeriod();assert.equal(theme.get().mode,'dark');
+const normalized=theme.normalize({fontSize:100,gap:-1,wallpaperDim:8,skin:'cat',colors:{light:{accent:'red',user:'#ffffff'}}});assert.equal(normalized.fontSize,23);assert.equal(normalized.gap,8);assert.equal(normalized.wallpaperDim,.85);assert.equal(normalized.skin,'round');assert(!normalized.colors.light.accent);assert.equal(normalized.colors.light.user,'#ffffff');
+assert.throws(()=>theme.normalize({wallpaper:'javascript:alert(1)'}));assert.throws(()=>theme.normalize({wallpaper:'data:image/svg+xml;base64,abcd'}));
+const migrated=theme.fromXY({preset:'apple',mode:'light',bgColor:'#f2f8ed',userBubble:'#ccddee',bgImage:'https://example.test/old.jpg',fontScale:1.1,bubbleGap:24,bubbleGlass:true},{userBubble:'#ddeeff'});assert.equal(migrated.colors.light.user,'#ddeeff');assert.equal(migrated.fontSize,16.5);assert.equal(migrated.gap,24);
+for(const preset of ['apple','mist','rose','ink'])for(const mode of ['light','dark']){const config=theme.normalize({preset,mode});const t=theme.tokens(config,mode);assert.equal(t.ink,theme.textFor(t.background));assert.equal(t.userText,theme.textFor(t.user));assert.equal(t.assistantText,theme.textFor(t.assistant));}
+const before=theme.get();quota=true;assert.throws(()=>theme.set({preset:'ink'}),/quota/);assert.equal(theme.get().preset,before.preset);console.log('PASS theme presets, modes/system switch, wallpaper retention, bounds, invalid URLs, XY conversion, contrast selection, quota consistency');

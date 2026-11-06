@@ -286,55 +286,6 @@
 .chat-next-help{margin:0 0 18px;font-size:10px;color:#a3bbaa;line-height:1.9}
 .chat-next button:focus-visible,.chat-next input:focus-visible,.chat-next select:focus-visible,
 .chat-next textarea:focus-visible{outline:2px solid #edcb8e;outline-offset:2px}
-body[data-period="day"] .panel.is-chat .chat-next{
-  --c-gold:#90713c;
-  --c-text:#315943;
-  --c-line:rgba(108,141,101,.26);
-}
-body[data-period="day"] .chat-next-icon,
-body[data-period="day"] .chat-next-provider,
-body[data-period="day"] .chat-next-model{
-  background:rgba(235,246,228,.84);color:#305c42;border-color:#acc8a7;
-}
-body[data-period="day"] .chat-next-provider option,
-body[data-period="day"] .chat-next-model option{color:#315943;background:#edf6e8}
-body[data-period="day"] .chat-next-bubble{
-  background:#e8f3e4;
-  border-color:#afcfaa;
-  color:#315b46;
-}
-body[data-period="day"] .chat-next-message.mine .chat-next-bubble{
-  background:#cde9c6;border-color:#a1c494;color:#2e5841;
-}
-body[data-period="day"] .chat-next-empty{color:#6a9172}
-body[data-period="day"] .chat-next-empty strong{color:#476b4b}
-body[data-period="day"] .chat-next-empty span{color:#8ca16d}
-body[data-period="day"] .chat-next-status{color:#60816c}
-body[data-period="day"] .chat-next-status.is-error{color:#a24d4a}
-body[data-period="day"] .chat-next-composer{
-  background:rgba(243,250,236,.95);border-color:#a1bb9d;
-}
-body[data-period="day"] .chat-next-input{color:#2f5942}
-body[data-period="day"] .chat-next-sheet{background:linear-gradient(155deg,#f0f7e8,#dbead9)}
-body[data-period="day"] .chat-next-sheet-head strong,
-body[data-period="day"] .chat-next-section-label{color:#3c6249}
-body[data-period="day"] .chat-next-sheet-actions button,
-body[data-period="day"] .chat-next-sheet-body button:not(.chat-next-primary){
-  color:#416b53;background:rgba(211,233,206,.7);border-color:#b1cba8;
-}
-body[data-period="day"] .chat-next-thread{background:#eef6e8}
-body[data-period="day"] .chat-next-thread.active{background:#d7ebd1;border-color:#88ad84}
-body[data-period="day"] .chat-next-field,body[data-period="day"] .chat-next-checkbox{color:#385d43}
-body[data-period="day"] .chat-next-field input,
-body[data-period="day"] .chat-next-field textarea,
-body[data-period="day"] .chat-next-input-select{
-  background:#f6fbf0;color:#345941;border-color:#a9c39e;
-}
-body[data-period="day"] .chat-next-field input::placeholder,
-body[data-period="day"] .chat-next-field textarea::placeholder{color:#7b9d81}
-body[data-period="day"] .chat-next-input-select option{background:#eff9e8;color:#345941}
-body[data-period="day"] .chat-next-feedback,
-body[data-period="day"] .chat-next-help{color:#658b6b}
 @media(max-width:760px){
   .panel.is-chat .chat-next{height:100%;min-height:0}
   .chat-next-toolbar{
