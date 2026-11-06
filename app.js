@@ -182,14 +182,9 @@
   }
 
   function renderLibrary() {
-    content.append(lead("古籍页间，有角色的来处、世界的脉络，也有那些曾经选过的开场白。"));
-    content.append(card("角色书架", "未来接入原砚屿的角色卡、头像、用户名字、可选开场白与角色切换。"));
-    content.append(card("世界与记忆", "继续保留世界书、跨窗日记与资料管理，不强制改造成酒馆结构。"));
-    content.append(card("书页与夜灯", "阅读面板将支持章节收起、清晰的明暗配色与舒适的长文排版。"));
-    const tags = element("div", "tag-row");
-    ["角色卡", "世界书", "开场白", "导入导出"].forEach(t => tags.append(element("span", "tag", t)));
-    content.append(tags);
+    window.YanyaLibrary.mount(content);
   }
+
   function renderWorkshop() {
     if (window.YanyaBaZi && typeof window.YanyaBaZi.mount === "function") {
       window.YanyaBaZi.mount(content);

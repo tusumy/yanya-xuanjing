@@ -57,9 +57,18 @@ const endpoint=(raw,kind="chat")=>{
   if(u.username||u.password||u.search||u.hash)throw Error("接口地址不能带账号密码、查询参数或锚点");
   let path=u.pathname.replace(/\/+$/,"");
   path=path.replace(/\/(?:chat\/completions|models)$/,"");
+  if(!path)path="/v1";
   u.pathname=(path==="/"?"":path)+"/"+(kind==="models"?"models":"chat/completions");
   return u.href;
 };
+const readJSON=async response=>{
+  const body=await response.text();
+  if(/^\s*</.test(body))throw Error("接口返回了网页，未返回 API 数据。请检查接口地址是否包含 /v1，以及服务是否跳转到登录或错误页。HTTP "+response.status);
+  let data;try{data=JSON.parse(body)}catch(_){throw Error("接口未返回有效 JSON。HTTP "+response.status)}
+  if(!response.ok)throw Error("HTTP "+response.status+"："+(data?.error?.message||data?.message||"请求失败"));
+  return data;
+};
+const bookContext=()=>window.YanyaLibrary?.context()||{system:"",greeting:""};
 const output=x=>{
   const from=c=>{
     if(typeof c==="string")return c;
@@ -209,6 +218,8 @@ function mount(content){
     if(pending)return;
     const t={id:uid(),title:"新对话",updated:timestamp(),messages:[]};
     threads.unshift(t);if(threads.length>MAX_THREADS)threads.length=MAX_THREADS;
+    const greeting=bookContext().greeting;
+    if(greeting)t.messages.push({role:"assistant",content:greeting,at:timestamp()});
     current=t.id;persist();renderMessages();openDrawer("");input.focus();
   };
   const chooseThread=id=>{
@@ -361,13 +372,7 @@ function mount(content){
           method:"GET",mode:"cors",credentials:"omit",headers,
           signal:controller.signal,cache:"no-store"
         });
-        if(!response.ok){
-          const body=(await response.text()).slice(0,700);
-          let reason=body;
-          try{const data=JSON.parse(body);reason=data?.error?.message||data?.message||body}catch(_){}
-          throw Error("HTTP "+response.status+"："+reason.slice(0,200));
-        }
-        const data=await response.json();
+        const data=await readJSON(response);
         const source=Array.isArray(data?.data)?data.data:
           Array.isArray(data?.models)?data.models:
           Array.isArray(data)?data:[];
@@ -452,7 +457,7 @@ function mount(content){
     }
     renderMessages();
     const messages=[
-      ...(p.system.trim()?[{role:"system",content:p.system.trim()}]:[]),
+      ...([p.system.trim(),bookContext().system].filter(Boolean).length?[{role:"system",content:[p.system.trim(),bookContext().system].filter(Boolean).join("\n\n")}]:[]),
       ...t.messages.slice(-40).map(m=>({role:m.role,content:m.content}))
     ];
     const controller=new AbortController();
@@ -504,7 +509,7 @@ function mount(content){
         }
         try{await reader.cancel()}catch(_){}
       }else{
-        const data=await response.json();
+        const data=await readJSON(response);
         reply=output(data).slice(0,MAX_TEXT);
       }
       if(!reply.trim())throw Error("接口返回为空；确认模型名称、服务商格式和流式选项。");
